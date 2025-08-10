@@ -24,3 +24,4 @@ def get_collection(name: str) -> Callable[[], object]:
 # 앱 시작 시 1회: 인덱스 초기화
 def init_indexes() -> None:
     db["users"].create_index("email", unique=True)
+    db["refresh_tokens"].create_index([("user_id", 1), ("token", 1)], unique=True)

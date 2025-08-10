@@ -11,12 +11,10 @@ class UserCreate(BaseModel):
     phone: str
 
 class UserResponse(BaseModel):
-    id: int
+    id: str
     email: EmailStr
     name: str
     age: int
     gender: str
     phone: str
 
-    class Config:
-        orm_mode = True

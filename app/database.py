@@ -1,26 +1,26 @@
 # app/database.py
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+import os
+from typing import Callable
+from pymongo import MongoClient
+from dotenv import load_dotenv
 
-# 일단 SQLite 기준으로 생성(추후 변경)
-SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
+# .env 로드
+load_dotenv()
 
-# DB 엔진 생성
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={'check_same_thread':False}
-)
+# 현재는 로컬용으로 사용 -> 추후 수정 예정
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
+MONGO_DB_NAME = os.getenv("MONGO_DB_NAME", "app_db")
 
-# 세션 객체
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# Mongo 클라이언트/DB
+client = MongoClient(MONGO_URI)
+db = client[MONGO_DB_NAME]
 
-# Base 클래스: models가 상속할 부모
-Base = declarative_base()
+# FastAPI DI: 특정 컬렉션 주입
+def get_collection(name: str) -> Callable[[], object]:
+    def _dep():
+        return db[name]
+    return _dep
 
-# Dependency: 요청마다 DB 세션 주입
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+# 앱 시작 시 1회: 인덱스 초기화
+def init_indexes() -> None:
+    db["users"].create_index("email", unique=True)

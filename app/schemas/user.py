@@ -1,6 +1,7 @@
 # app/schemas/user.py
 from pydantic import BaseModel, EmailStr, constr
-from typing import Literal
+from typing import Literal, Optional
+
 
 class UserCreate(BaseModel):
     email: EmailStr
@@ -18,3 +19,8 @@ class UserResponse(BaseModel):
     gender: str
     phone: str
 
+class ProfileUpdateRequest(BaseModel):
+    name: Optional[str]
+    age: Optional[int]
+    gender: Optional[str]
+    phone: Optional[str]

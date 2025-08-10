@@ -25,3 +25,21 @@ def get_collection(name: str) -> Callable[[], object]:
 def init_indexes() -> None:
     db["users"].create_index("email", unique=True)
     db["refresh_tokens"].create_index([("user_id", 1), ("token", 1)], unique=True)
+    db["refresh_tokens"].create_index("expires_at", expireAfterSeconds=0)
+
+    # 자연어 검색용 text index (필요 필드 계속 추가 가능)
+    db["wanted_job_postings"].create_index(
+        [
+            ("detail.intro", "text"),
+            ("detail.main_tasks", "text"),
+            ("detail.requirements", "text"),
+            ("detail.preferred_points", "text"),
+            ("company.name", "text"),
+            ("detail.position.job", "text"),
+            ("detail.position.jobGroup", "text"),
+        ],
+        name="job_text_index",
+        default_language="korean",
+    )
+    db["wanted_job_postings"].create_index("status")
+    db["wanted_job_postings"].create_index("due_time")

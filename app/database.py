@@ -2,7 +2,6 @@
 import os
 import motor.motor_asyncio
 from beanie import init_beanie
-from pymongo import ASCENDING
 from app.models.user_document import UserDocument
 from app.models.refresh_token_document import RefreshTokenDocument
 from dotenv import load_dotenv
@@ -26,12 +25,5 @@ async def init_db():
         ],
     )
 
-    # TTL 인덱스 생성 (expires_at 기준)
-    await db["refresh_tokens"].create_index(
-        [("expires_at", ASCENDING)],
-        expireAfterSeconds=0,
-        name="rt_expires_at_ttl",
-        background=True,
-    )
-
-    return db
+    # 종료 시 close를 위해 client도 함께 반환
+    return db, client

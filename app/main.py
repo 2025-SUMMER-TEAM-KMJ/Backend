@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.services.user import UserService
 from app.services.auth import AuthService
 from app.api.routers import user, auth
+from app.database import init_db
 
 app = FastAPI()
 
@@ -35,8 +36,20 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup_event():
+    # DB 초기화 + 클라이언트/DB 핸들 저장
+    db, client = await init_db()
+    app.state.mongo_client = client
+    app.state.mongo_db = db
+
     app.state.user_service = UserService()
     app.state.auth_service = AuthService()
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    # Motor 커넥션풀 정리
+    client = getattr(app.state, "mongo_client", None)
+    if client:
+        client.close()
 
 # 라우터 등록
 app.include_router(user.router)

@@ -1,25 +1,38 @@
 # app/api/routers/user.py
-from fastapi import APIRouter, Depends
-from pymongo.collection import Collection
-from app.database import get_collection
-from app.schemas.user import UserCreate, UserResponse, ProfileUpdateRequest
-from app.services.user import signup, update_profile
-from app.deps.auth import get_current_user
+from fastapi import APIRouter, Depends, HTTPException, status, Request
+from app.schemas.user import SignUpRequest, UserUpdateRequest, UserResponse
+from app.deps.auth import get_current_user_id
 
 router = APIRouter(prefix="/users", tags=["users"])
 
-@router.post("/signup", response_model=UserResponse)
-def create_user(
-    user_in: UserCreate,
-    users_col: Collection = Depends(get_collection("users")),
-):
-    return signup(users_col, user_in)
+# 앱 state에서 서비스 꺼내는 의존성
+def get_user_service(request: Request):
+    return request.app.state.user_service
 
-@router.patch("/profile", response_model=UserResponse)
-def patch_profile(
-    payload: ProfileUpdateRequest,
-    current_user=Depends(get_current_user),
-    users_col: Collection = Depends(get_collection("users")),
+# 회원가입: POST /users/signup
+@router.post("/signup", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+async def sign_up(req: SignUpRequest, svc=Depends(get_user_service)):
+    try:
+        return await svc.sign_up(req)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+# 내 프로필 조회: GET /users
+@router.get("", response_model=UserResponse)
+async def get_profile(user_id: str = Depends(get_current_user_id), svc=Depends(get_user_service)):
+    try:
+        return await svc.get_profile(user_id)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+# 내 프로필 부분 업데이트: PATCH /users
+@router.patch("", response_model=UserResponse)
+async def update_profile(
+    req: UserUpdateRequest,
+    user_id: str = Depends(get_current_user_id),
+    svc=Depends(get_user_service)
 ):
-    user_id = current_user["_id"]
-    return update_profile(users_col, user_id, payload)
+    try:
+        return await svc.update_profile(user_id, req)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

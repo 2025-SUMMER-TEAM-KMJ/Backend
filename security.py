@@ -73,3 +73,13 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     # if user is None:
     #     raise credentials_exception
     return {"username": username} # 실제로는 DB에서 조회한 User 객체를 반환
+
+# 선택적 인증을 위한 새로운 의존성 함수
+async def get_optional_current_user(token: str = Depends(oauth2_scheme, use_cache=False)):
+    """
+    토큰이 있으면 사용자를 반환하고, 없으면 None을 반환하는 의존성.
+    use_cache=False는 FastAPI가 응답을 캐시하지 않도록 합니다.
+    """
+    if not token:
+        return None
+    return await get_current_user(token)

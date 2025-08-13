@@ -1,34 +1,30 @@
 # app/deps/auth.py
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jose import jwt, JWTError
-from app.core.config import settings
-from app.models.user import User
-from app.db.session import get_db
-from sqlalchemy.orm import Session
+from app.core.security import decode_token
+from app.models.user_document import UserDocument
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")  # 클라이언트 문서화용
 
-
-def get_current_user(
-        token: str = Depends(oauth2_scheme),
-        db: Session = Depends(get_db)
-) -> User:
-    credentials_exception = HTTPException(
+async def get_current_user_id(token: str = Depends(oauth2_scheme)) -> str:
+    """
+    Authorization: Bearer <access_token> 에서 user_id(sub) 추출 및 검증.
+    실제 유저 존재 여부도 확인.
+    """
+    credentials_exc = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
+        detail="인증이 필요합니다.",
         headers={"WWW-Authenticate": "Bearer"},
     )
-
     try:
-        payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
-        user_id: str = payload.get("sub")
-        if user_id is None:
-            raise credentials_exception
-    except JWTError:
-        raise credentials_exception
+        payload = decode_token(token)
+        user_id: str | None = payload.get("sub")
+        if not user_id:
+            raise credentials_exc
+    except Exception:
+        raise credentials_exc
 
-    user = db.query(User).filter(User.id == user_id).first()
-    if user is None:
-        raise credentials_exception
-    return user
+    user = await UserDocument.get(user_id)
+    if not user:
+        raise credentials_exc
+    return user_id

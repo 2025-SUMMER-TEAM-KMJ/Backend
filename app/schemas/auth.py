@@ -1,9 +1,11 @@
 # app/schemas/auth.py
-from pydantic import BaseModel, EmailStr, constr
+from pydantic import BaseModel, EmailStr, Field, Annotated
+
+Password = Annotated[str, Field(min_length=8)]
 
 class LoginRequest(BaseModel):
     email: EmailStr
-    password: constr(min_length=8)
+    password: Password
 
 class TokenResponse(BaseModel):
     access_token: str

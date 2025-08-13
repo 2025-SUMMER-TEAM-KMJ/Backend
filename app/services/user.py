@@ -1,82 +1,66 @@
 # app/services/user.py
-from typing import Dict, Any, Mapping
-from fastapi import HTTPException
-from pymongo.collection import Collection
-from pymongo.errors import DuplicateKeyError
-from bson import ObjectId
+from typing import Any, Dict
+from app.schemas.user import SignUpRequest, UserUpdateRequest, UserResponse
+from app.repositories.user_repository import UserRepository
 
-from app.schemas.user import UserCreate, ProfileUpdateRequest
-from app.crud.user import (
-    create_user as create_user_crud,
-    get_user_by_email,
-)
+class UserService:
+    def __init__(self):
+        self.repo = UserRepository()
 
-def _sanitize_user(doc: Mapping[str, Any]) -> Dict[str, Any]:
-    """DB 문서를 API 응답용으로 변환: _id->id(str), 비밀번호 제거."""
-    if not doc:
-        return {}
-    d = dict(doc)
-    _id = d.pop("_id", None)
-    if isinstance(_id, ObjectId):
-        d["id"] = str(_id)
-    elif _id is not None:
-        d["id"] = _id
-    d.pop("hashed_password", None)
-    return d
+    # 회원가입
+    async def sign_up(self, req: SignUpRequest) -> UserResponse:
+        # 중복 이메일 체크
+        existed = await self.repo.get_by_email(str(req.email))
+        if existed:
+            raise ValueError("이미 존재하는 이메일입니다.")
 
+        # 초기 유저 문서 구성 (응답 안정성을 위해 기본값 포함)
+        doc: Dict[str, Any] = {
+            "email": str(req.email),
+            "password": req.password,
+            "name": req.name,
+            "age": req.age,
+            "gender": req.gender,
+            "phone": req.phone,
 
-def signup(users_col: Collection, user_in: UserCreate) -> Dict[str, Any]:
-    """이메일 중복 체크 + 사용자 생성 + 응답 정리."""
-    if get_user_by_email(users_col, user_in.email):
-        raise HTTPException(status_code=400, detail="이미 등록된 이메일입니다.")
-    try:
-        created = create_user_crud(users_col, user_in)
-        return _sanitize_user(created)
-    except DuplicateKeyError:
-        raise HTTPException(status_code=400, detail="이미 등록된 이메일입니다.")
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+            # 선택/리스트 필드 기본값
+            "urls": [],
+            "brief": None,
+            "competencies": [],
+            "preferred_position": [],
+            "educations": [],
+            "work_experience": [],
+            "experiences": [],
+            "certifications": [],
+            "qnas": [],
+            "interest_jobs": [],
+        }
 
+        created = await self.repo.create(doc)
+        # 일관성을 위해 DB에서 다시 읽어오기
+        saved = await self.repo.get_by_email(str(req.email))
+        return UserResponse.from_doc(saved.dict())
 
-def update_profile(
-    users_col: Collection,
-    user_id: str | ObjectId,
-    payload: ProfileUpdateRequest,
-) -> Dict[str, Any]:
-    """
-    부분 업데이트 지원.
-    - 허용 필드만 업데이트: name, age, gender, phone
-    - 변경 없음이면 현재 프로필 반환
-    """
-    allowed_fields = {"name", "age", "gender", "phone"}
+    # 프로필 조회
+    async def get_profile(self, user_id: str) -> UserResponse:
+        doc = await self.repo.get_by_id(user_id)
+        if not doc:
+            raise ValueError("사용자를 찾을 수 없습니다.")
+        return UserResponse.from_doc(doc.dict())
 
-    update_data = {
-        k: v for k, v in payload.dict(exclude_unset=True).items()
-        if v is not None and k in allowed_fields
-    }
+    # 프로필 업데이트
+    async def update_profile(self, user_id: str, req: UserUpdateRequest) -> UserResponse:
+        # 보낸 필드만 반영
+        try:
+            payload: Dict[str, Any] = req.model_dump(exclude_unset=True)
+        except AttributeError:
+            payload = req.dict(exclude_unset=True)
 
-    # 이메일/비밀번호 등 허용하지 않는 필드는 무시
-    if not update_data:
-        # 변경 없으면 현재 상태 반환
-        _id = user_id if isinstance(user_id, ObjectId) else ObjectId(user_id)
-        current = users_col.find_one({"_id": _id})
-        if not current:
-            raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
-        return _sanitize_user(current)
+        # 보호 필드 제거 (이메일/비밀번호 등)
+        payload.pop("email", None)
+        payload.pop("password", None)
 
-    _id = user_id if isinstance(user_id, ObjectId) else ObjectId(user_id)
-    result = users_col.update_one({"_id": _id}, {"$set": update_data})
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
-
-    updated = users_col.find_one({"_id": _id})
-    return _sanitize_user(updated)
-
-
-def get_profile(users_col: Collection, user_id: str | ObjectId) -> Dict[str, Any]:
-    """현재 사용자 프로필 조회"""
-    _id = user_id if isinstance(user_id, ObjectId) else ObjectId(user_id)
-    doc = users_col.find_one({"_id": _id})
-    if not doc:
-        raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
-    return _sanitize_user(doc)
+        updated = await self.repo.update(user_id, payload)
+        if not updated:
+            raise ValueError("업데이트 실패 또는 사용자를 찾을 수 없습니다.")
+        return UserResponse.from_doc(updated.dict())

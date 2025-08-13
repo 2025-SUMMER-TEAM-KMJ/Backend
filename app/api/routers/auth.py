@@ -5,8 +5,8 @@ from app.services.auth import AuthService
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-def get_auth_service(request) -> AuthService:   # request: Request 타입 힌트 생략 가능
-    return request.app.state.auth_service       # lifespan에서 주입한 싱글턴
+def get_auth_service(request) -> AuthService:
+    return request.app.state.auth_service
 
 @router.post("/login", response_model=TokenResponse)
 async def login_endpoint(creds: LoginRequest, resp: Response, svc: AuthService = Depends(get_auth_service)):

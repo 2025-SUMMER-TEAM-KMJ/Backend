@@ -1,45 +1,37 @@
 # app/database.py
 import os
-from typing import Callable
-from pymongo import MongoClient
+import motor.motor_asyncio
+from beanie import init_beanie
+from pymongo import ASCENDING
+from app.models.user_document import UserDocument
+from app.models.refresh_token_document import RefreshTokenDocument
 from dotenv import load_dotenv
 
-# .env 로드
+# .env 파일 로드
 load_dotenv()
 
-# 현재는 로컬용으로 사용 -> 추후 수정 예정
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
-MONGO_DB_NAME = os.getenv("MONGO_DB_NAME", "app_db")
+DB_NAME = os.getenv("DB_NAME", "mydb")
 
-# Mongo 클라이언트/DB
-client = MongoClient(MONGO_URI)
-db = client[MONGO_DB_NAME]
+async def init_db():
+    client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_URI)
+    db = client[DB_NAME]
 
-# FastAPI DI: 특정 컬렉션 주입
-def get_collection(name: str) -> Callable[[], object]:
-    def _dep():
-        return db[name]
-    return _dep
-
-# 앱 시작 시 1회: 인덱스 초기화
-def init_indexes() -> None:
-    db["users"].create_index("email", unique=True)
-    db["refresh_tokens"].create_index([("user_id", 1), ("token", 1)], unique=True)
-    db["refresh_tokens"].create_index("expires_at", expireAfterSeconds=0)
-
-    # 자연어 검색용 text index (필요 필드 계속 추가 가능)
-    db["wanted_job_postings"].create_index(
-        [
-            ("detail.intro", "text"),
-            ("detail.main_tasks", "text"),
-            ("detail.requirements", "text"),
-            ("detail.preferred_points", "text"),
-            ("company.name", "text"),
-            ("detail.position.job", "text"),
-            ("detail.position.jobGroup", "text"),
+    # Beanie 초기화 (모든 Document 모델 등록)
+    await init_beanie(
+        database=db,
+        document_models=[
+            UserDocument,
+            RefreshTokenDocument,
         ],
-        name="job_text_index",
-        default_language="korean",
     )
-    db["wanted_job_postings"].create_index("status")
-    db["wanted_job_postings"].create_index("due_time")
+
+    # TTL 인덱스 생성 (expires_at 기준)
+    await db["refresh_tokens"].create_index(
+        [("expires_at", ASCENDING)],
+        expireAfterSeconds=0,
+        name="rt_expires_at_ttl",
+        background=True,
+    )
+
+    return db

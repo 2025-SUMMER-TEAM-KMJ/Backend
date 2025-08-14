@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.services.user import UserService
 from app.services.auth import AuthService
-from app.api.routers import user, auth
+from app.api.routers import user, auth, job_posting
 from app.database import init_db
 
 app = FastAPI()
@@ -54,3 +54,4 @@ async def shutdown_event():
 # 라우터 등록
 app.include_router(user.router)
 app.include_router(auth.router)
+app.include_router(job_posting.router)

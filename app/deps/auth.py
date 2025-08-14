@@ -1,4 +1,5 @@
 # app/deps/auth.py
+from typing import Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from app.core.security import decode_token
@@ -28,3 +29,25 @@ async def get_current_user_id(token: str = Depends(oauth2_scheme)) -> str:
     if not user:
         raise credentials_exc
     return user_id
+
+async def get_optional_user_id(
+    token: Optional[str] = Depends(oauth2_scheme)
+) -> Optional[str]:
+    """
+    로그인하지 않은 경우 None 반환.
+    로그인한 경우 user_id 반환.
+    """
+    if not token:
+        return None
+
+    try:
+        payload = decode_token(token)
+        user_id: str | None = payload.get("sub")
+        if not user_id:
+            return None
+        user = await UserDocument.get(user_id)
+        if not user:
+            return None
+        return user_id
+    except Exception:
+        return None

@@ -1,9 +1,9 @@
-# app/api/routers/jobs.py
+# app/api/routers/job_posting.py
 from fastapi import APIRouter, Depends
 from pymongo.collection import Collection
 from app.database import get_collection
-from app.schemas.jobs import JobSearchRequest, JobSearchResponse
-from app.services.jobs import search_jobs_nl
+from app.schemas.job_posting import JobSearchRequest, JobSearchResponse
+from app.services.job_posting import search_jobs_nl
 from app.deps.auth import get_current_user
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])

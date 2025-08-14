@@ -1,84 +1,91 @@
 # app/services/job_posting.py
-from typing import Any, Dict, List, Union
-from pymongo.collection import Collection
-from bson import ObjectId
+from __future__ import annotations
+from typing import Optional, List, Dict, Any, Set
+from app.repositories.job_posting_repository import JobPostingRepository
+from app.repositories.user_job_bookmark_repository import UserJobBookmarkRepository
+from app.schemas.job_posting import JobPostingResponse, JobPostingListResponse
 
-def _prune_nulls(obj: Any) -> Any:
-    """
-    - dict: value가 None이면 키 제거, 하위도 재귀 처리
-    - list: None 요소 제거, 하위도 재귀 처리
-    - 그 외: 그대로 반환
-    """
-    if isinstance(obj, dict):
-        cleaned = {}
-        for k, v in obj.items():
-            if v is None:
-                continue
-            pv = _prune_nulls(v)
-            # 빈 dict/list 까지 없애기
-            # if pv in ({}, []): continue
-            cleaned[k] = pv
-        return cleaned
-    if isinstance(obj, list):
-        cleaned_list = []
-        for v in obj:
-            if v is None:
-                continue
-            pv = _prune_nulls(v)
-            cleaned_list.append(pv)
-        return cleaned_list
-    return obj
+class JobPostingService:
+    def __init__(
+        self,
+        posting_repo: Optional[JobPostingRepository] = None,
+        bookmark_repo: Optional[UserJobBookmarkRepository] = None,
+    ):
+        self.repo = posting_repo or JobPostingRepository()
+        self.bookmarks = bookmark_repo or UserJobBookmarkRepository()
 
-def search_jobs_nl(
-    postings_col: Collection, q: str, offset: int, limit: int
-) -> Dict[str, Any]:
-    base_match = {"$and": [{"$text": {"$search": q}}, {"status": "active"}]}
+    async def get(self, job_id: str, user_id: Optional[str] = None) -> JobPostingResponse:
+        doc = await self.repo.get_by_id(job_id)
+        if not doc:
+            raise ValueError("공고를 찾을 수 없습니다.")
+        res = JobPostingResponse.from_doc(doc)
+        if user_id:
+            res.bookmarked = await self.bookmarks.is_bookmarked(user_id, res.id)
+        return res
 
-    total = postings_col.count_documents(base_match)
+    async def list(
+        self,
+        q: Optional[str],
+        offset: int,
+        limit: int,
+        user_id: Optional[str] = None,
+    ) -> JobPostingListResponse:
+        """
+        q가 비었으면 전체 최신순(ObjectId desc) 반환.
+        q가 있으면 검색(파사드: RAG→Mongo).
+        로그인 했을 때는 북마크 정보도 추가해서 반환.
+        """
+        docs, total = await self.repo.list(q=q, offset=offset, limit=limit)
+        items = [JobPostingResponse.from_doc(d) for d in docs]
 
-    pipeline: List[Dict[str, Any]] = [
-        {"$match": base_match},
-        # due_time이 null/없음 → 가장 뒤로 보내기
-        {"$addFields": {
-            "parsed_due": {
-                "$cond": [
-                    {"$ifNull": ["$due_time", False]},
-                    {
-                        "$dateFromString": {
-                            "dateString": "$due_time",
-                            "onError": {"$dateFromString": {"dateString": "9999-12-31T23:59:59Z"}},
-                            "onNull": {"$dateFromString": {"dateString": "9999-12-31T23:59:59Z"}},
-                        }
-                    },
-                    {"$dateFromString": {"dateString": "9999-12-31T23:59:59Z"}}
-                ]
-            },
-            "textScore": {"$meta": "textScore"},
-        }},
-        {"$sort": {"parsed_due": 1, "textScore": -1}},  # 마감 임박순, 동점 시 텍스트 점수
-        {"$skip": max(0, offset)},
-        {"$limit": max(1, min(100, limit))},
-        # 문서 전체 반환하되 원문(sourceData)만 제거
-        {"$project": {
-            "parsed_due": 0,
-            "textScore": 0,
-            "sourceData": 0,   # 원본 너무 크니 제외
-        }},
-    ]
+        if user_id and items:
+            ids = [i.id for i in items]
+            bookmarked_ids: Set[str] = await self.bookmarks.list_bookmarked_job_ids(user_id, ids)
+            for i in items:
+                i.bookmarked = i.id in bookmarked_ids
 
-    raw_docs = list(postings_col.aggregate(pipeline))
+        return JobPostingListResponse(total=total, items=items)
 
-    items: List[Dict[str, Any]] = []
-    for d in raw_docs:
-        doc = dict(d)
-        # _id → id(str)
-        _id = doc.pop("_id", None)
-        if isinstance(_id, ObjectId):
-            doc["id"] = str(_id)
-        elif _id is not None:
-            doc["id"] = _id
-        # null 전부 제거
-        doc = _prune_nulls(doc)
-        items.append(doc)
+    async def recommendations(
+        self,
+        user_id: str,
+        offset: int,
+        limit: int,
+    ) -> List[JobPostingResponse]:
+        """
+        사용자 맞춤 추천, AI 연결 필요
+        """
 
-    return {"total": total, "offset": offset, "limit": limit, "items": items}
+    async def add_bookmark(self, user_id: str, job_id: str) -> Dict[str, Any]:
+        # 존재 확인 (없으면 404)
+        doc = await self.repo.get_by_id(job_id)
+        if not doc:
+            raise ValueError("공고를 찾을 수 없습니다.")
+        await self.bookmarks.add(user_id, job_id)
+        return {"job_id": job_id, "bookmarked": True}
+
+    async def remove_bookmark(self, user_id: str, job_id: str) -> Dict[str, Any]:
+        # 존재 확인 (없어도 삭제는 idempotent 하게 처리 가능하지만, UX 위해 확인)
+        doc = await self.repo.get_by_id(job_id)
+        if not doc:
+            raise ValueError("공고를 찾을 수 없습니다.")
+        await self.bookmarks.remove(user_id, job_id)
+        return {"job_id": job_id, "bookmarked": False}
+
+    async def list_bookmarks(
+        self, user_id: str, offset: int, limit: int
+    ) -> JobPostingListResponse:
+        """
+        유저의 북마크 목록을 created_at DESC로 가져와 상세 붙여 반환.
+        """
+        job_ids, total = await self.bookmarks.list_user_bookmark_ids(
+            user_id, skip=offset, limit=limit
+        )
+        if not job_ids:
+            return JobPostingListResponse(total=total, items=[])
+
+        docs = await self.repo.get_by_ids_preserve_order(job_ids)
+        items = [JobPostingResponse.from_doc(d) for d in docs]
+        for i in items:
+            i.bookmarked = True  # 북마크 목록이므로 모두 True
+        return JobPostingListResponse(total=total, items=items)

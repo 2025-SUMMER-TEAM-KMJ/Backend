@@ -1,4 +1,4 @@
-# app/services/jobs.py
+# app/services/job_posting.py
 from typing import Any, Dict, List, Union
 from pymongo.collection import Collection
 from bson import ObjectId

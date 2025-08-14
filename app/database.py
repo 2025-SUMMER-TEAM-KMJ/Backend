@@ -6,6 +6,7 @@ from app.models.user_document import UserDocument
 from app.models.refresh_token_document import RefreshTokenDocument
 from app.models.job_posting_document import JobPostingDocument
 from app.models.user_job_bookmark_document import UserJobBookmarkDocument
+from app.models.cover_letter_document import CoverLetterDocument
 from dotenv import load_dotenv
 
 # .env 파일 로드
@@ -25,7 +26,8 @@ async def init_db():
             UserDocument,
             RefreshTokenDocument,
             JobPostingDocument,
-            UserJobBookmarkDocument
+            UserJobBookmarkDocument,
+            CoverLetterDocument
         ],
     )
 

@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 class RefreshTokenDocument(Document):
     user_id: Indexed(str)                 # 조회 자주 하므로 인덱스 권장
     token: Indexed(str, unique=True)      # 토큰값 유니크
-    expires_at: Indexed(datetime, expire_after_seconds=0) = Field(
+    expires_at: Indexed(datetime, expireAfterSeconds=0) = Field(
         default_factory=lambda: datetime.now(timezone.utc)
     )
 

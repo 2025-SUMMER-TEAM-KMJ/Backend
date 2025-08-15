@@ -7,6 +7,7 @@ on:
 
 env:
   APP_PORT_HOST: 8765
+  CONTAINER_NAME: server
 
 jobs:
   build-and-deploy:
@@ -58,7 +59,7 @@ jobs:
           port: 22
           script: |
             APP_IMAGE_URI="${IMAGE_URI}" # 이전 단계에서 설정된 환경 변수 사용
-            APP_CONTAINER_NAME="alzheimer-call-container"
+            APP_CONTAINER_NAME="${{ env.CONTAINER_NAME }}"
             
             # FastAPI 서버 포트 설정
             APP_PORT_HOST="${{ env.APP_PORT_HOST }}"

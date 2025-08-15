@@ -39,11 +39,11 @@ jobs:
           
           # Docker 이미지 빌드
           echo "Building Docker image: ${IMAGE_URI}"
-          sudo docker build -t $IMAGE_URI .
+          docker build -t $IMAGE_URI .
           
           # Docker 이미지 푸시
           echo "Pushing Docker image to Artifact Registry..."
-          sudo docker push $IMAGE_URI
+          docker push $IMAGE_URI
           
           # 다음 단계에서 사용할 수 있도록 이미지 URI를 출력
           echo "IMAGE_URI=${IMAGE_URI}" >> $GITHUB_ENV

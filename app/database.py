@@ -7,13 +7,7 @@ from app.models.refresh_token_document import RefreshTokenDocument
 from app.models.job_posting_document import JobPostingDocument
 from app.models.user_job_bookmark_document import UserJobBookmarkDocument
 from app.models.cover_letter_document import CoverLetterDocument
-from dotenv import load_dotenv
-
-# .env 파일 로드
-load_dotenv()
-
-MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
-DB_NAME = os.getenv("DB_NAME", "mydb")
+from settings import MONGO_URI, DB_NAME
 
 async def init_db():
     client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_URI)

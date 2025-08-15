@@ -52,10 +52,10 @@ class JobPostingDocument(Document):
     class Settings:
         name = "wanted_job_postings"  # 컬렉션명
         # 크롤링 중복 방지용
-        indexes = [
-            Indexed("metadata.sourceUrl", unique=True),
-            Indexed("status"),
-            Indexed("company.name"),
-            Indexed("detail.position.jobGroup"),
-            Indexed("detail.position.job"),
-        ]
+        # indexes = [
+        #     Indexed("metadata.sourceUrl", unique=True),
+        #     Indexed("status"),
+        #     Indexed("company.name"),
+        #     Indexed("detail.position.jobGroup"),
+        #     Indexed("detail.position.job"),
+        # ]

@@ -1,5 +1,6 @@
 # app/schemas/auth.py
-from pydantic import BaseModel, EmailStr, Field, Annotated
+from typing import Annotated
+from pydantic import BaseModel, EmailStr, Field
 
 Password = Annotated[str, Field(min_length=8)]
 

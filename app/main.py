@@ -1,10 +1,13 @@
 # app/main.py
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 from app.services.user import UserService
 from app.services.auth import AuthService
-from app.api.routers import user, auth, job_posting, cover_letter
+from app.api.routers import user, cover_letter, auth, job_posting
 from app.database import init_db
+
 
 app = FastAPI()
 
@@ -26,30 +29,36 @@ ALLOWED_ORIGINS = [
     # "https://your-production-domain.com" ex) 배포 도메인
 ]
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-@app.on_event("startup")
-async def startup_event():
-    # DB 초기화 + 클라이언트/DB 핸들 저장
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # --- startup ---
+    # Mongo/Motor + Beanie 초기화
     db, client = await init_db()
     app.state.mongo_client = client
     app.state.mongo_db = db
 
+    # 서비스 인스턴스 준비(필요한 것만)
     app.state.user_service = UserService()
     app.state.auth_service = AuthService()
 
-@app.on_event("shutdown")
-async def shutdown_event():
-    # Motor 커넥션풀 정리
+    yield
+
+    # --- shutdown ---
     client = getattr(app.state, "mongo_client", None)
     if client:
         client.close()
+
+
+app = FastAPI(lifespan=lifespan)
+
+# CORS 설정
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=True,  # ← 쿠키/인증 헤더 허용
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # 라우터 등록
 app.include_router(user.router)

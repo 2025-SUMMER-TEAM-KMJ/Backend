@@ -1,6 +1,6 @@
 # app/models/cover_letter_document.py
 from datetime import datetime, timezone
-from typing import Optional, Literal
+from typing import Optional, Literal, List
 from beanie import Document, Indexed
 from pydantic import Field
 
@@ -10,7 +10,7 @@ class CoverLetterDocument(Document):
     - type: 'profile' | 'job_posting'
     - job_posting_id: 공고 기반일 때만 채움 (JobPostingDocument.id 문자열)
     """
-    user_id: Indexed(str)  # UserDocument.id (str)
+    user_id: Indexed(str) = Field(...)  # UserDocument.id (str)
     title: str
     content: str
     type: Literal["profile", "job_posting"]

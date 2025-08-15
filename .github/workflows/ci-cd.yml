@@ -67,7 +67,7 @@ jobs:
 
             echo "Stopping and removing existing container (if any)..."
             sudo docker stop ${APP_CONTAINER_NAME} || true
-            sudo docker rm ${APP_CONTAINER_NAME} || trueS
+            sudo docker rm ${APP_CONTAINER_NAME} || true
 
             echo "Pulling latest Docker image: ${APP_IMAGE_URI}..."
             sudo docker pull ${APP_IMAGE_URI}

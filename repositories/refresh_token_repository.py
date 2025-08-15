@@ -1,7 +1,7 @@
 # app/repositories/refresh_token_repository.py
 from datetime import datetime, timezone, timedelta
 from typing import Optional
-from app.models.refresh_token_document import RefreshTokenDocument
+from models.refresh_token_document import RefreshTokenDocument
 
 class RefreshTokenRepository:
     # 생성

@@ -3,15 +3,15 @@ from datetime import datetime, timezone
 from typing import Optional
 from fastapi import HTTPException, Response, status
 
-from app.schemas.auth import LoginRequest, TokenResponse
-from app.core.security import (
+from schemas.auth import LoginRequest, TokenResponse
+from core.security import (
     verify_password,
     create_access_token,
     create_refresh_token,
     REFRESH_TOKEN_EXPIRE_DAYS,
 )
-from app.repositories.user_repository import UserRepository
-from app.repositories.refresh_token_repository import RefreshTokenRepository
+from repositories.user_repository import UserRepository
+from repositories.refresh_token_repository import RefreshTokenRepository
 
 class AuthService:
     """

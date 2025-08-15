@@ -1,9 +1,0 @@
-fastapi
-uvicorn
-motor
-beanie
-pydantic
-python-dotenv
-passlib[bcrypt]
-pyjwt
-python-multipart

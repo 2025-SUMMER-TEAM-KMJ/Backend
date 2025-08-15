@@ -1,6 +1,6 @@
 # app/repositories/job_posting_repository.py
 from typing import Optional, List
-from app.repositories.mongo_repositories.job_posting_mongodb_repository import JobPostingMongoDBRepository
+from repositories.mongo_repositories.job_posting_mongodb_repository import JobPostingMongoDBRepository
 
 class JobPostingRepository:
     def __init__(

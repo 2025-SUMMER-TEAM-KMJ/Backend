@@ -1,7 +1,7 @@
 # app/services/user.py
 from typing import Any, Dict
-from app.schemas.user import SignUpRequest, UserUpdateRequest, UserResponse
-from app.repositories.user_repository import UserRepository
+from schemas.user import SignUpRequest, UserUpdateRequest, UserResponse
+from repositories.user_repository import UserRepository
 
 class UserService:
     def __init__(self):

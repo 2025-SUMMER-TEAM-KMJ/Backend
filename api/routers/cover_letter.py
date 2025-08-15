@@ -1,12 +1,12 @@
 # app/api/routers/cover_letter.py
 from typing import Optional
 from fastapi import APIRouter, Depends, Query, HTTPException, status
-from app.deps.auth import get_current_user_id
-from app.schemas.cover_letter import (
+from deps.auth import get_current_user_id
+from schemas.cover_letter import (
     CoverLetterCreate, CoverLetterUpdate,
     CoverLetterResponse, CoverLetterListResponse,
 )
-from app.services.cover_letter import CoverLetterService
+from services.cover_letter import CoverLetterService
 
 router = APIRouter(prefix="/cover-letters", tags=["cover-letters"])
 svc = CoverLetterService()

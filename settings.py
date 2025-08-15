@@ -15,6 +15,3 @@ REFRESH_TOKEN_EXPIRE_DAYS = 14
 
 # Gemini Configs
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-
-if not GOOGLE_API_KEY:
-    raise ValueError("[ERROR] GOOGLE_API_KEY 환경 변수가 설정되지 않았습니다.")

@@ -1,9 +1,9 @@
 # app/services/job_posting.py
 from __future__ import annotations
 from typing import Optional, List, Dict, Any, Set
-from app.repositories.job_posting_repository import JobPostingRepository
-from app.repositories.user_job_bookmark_repository import UserJobBookmarkRepository
-from app.schemas.job_posting import JobPostingResponse, JobPostingListResponse
+from repositories.job_posting_repository import JobPostingRepository
+from repositories.user_job_bookmark_repository import UserJobBookmarkRepository
+from schemas.job_posting import JobPostingResponse, JobPostingListResponse
 
 class JobPostingService:
     def __init__(

@@ -3,7 +3,7 @@ from typing import Optional, List, Dict, Tuple
 from bson import ObjectId
 from beanie import SortDirection
 from beanie.operators import In
-from app.models.job_posting_document import JobPostingDocument
+from models.job_posting_document import JobPostingDocument
 
 class JobPostingMongoDBRepository:
     async def get_by_id(self, job_id: str) -> Optional[JobPostingDocument]:

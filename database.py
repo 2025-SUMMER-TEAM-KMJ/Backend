@@ -2,11 +2,11 @@
 import os
 import motor.motor_asyncio
 from beanie import init_beanie
-from app.models.user_document import UserDocument
-from app.models.refresh_token_document import RefreshTokenDocument
-from app.models.job_posting_document import JobPostingDocument
-from app.models.user_job_bookmark_document import UserJobBookmarkDocument
-from app.models.cover_letter_document import CoverLetterDocument
+from models.user_document import UserDocument
+from models.refresh_token_document import RefreshTokenDocument
+from models.job_posting_document import JobPostingDocument
+from models.user_job_bookmark_document import UserJobBookmarkDocument
+from models.cover_letter_document import CoverLetterDocument
 from settings import MONGO_URI, DB_NAME
 
 async def init_db():

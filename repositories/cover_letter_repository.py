@@ -1,7 +1,7 @@
 # app/repositories/cover_letter_repository.py
 from __future__ import annotations
 from typing import Optional, Dict, Any
-from app.repositories.mongo_repositories.cover_letter_mongodb_repository import CoverLetterMongoDBRepository
+from repositories.mongo_repositories.cover_letter_mongodb_repository import CoverLetterMongoDBRepository
 
 class CoverLetterRepository:
     def __init__(

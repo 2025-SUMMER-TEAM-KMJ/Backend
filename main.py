@@ -3,10 +3,10 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.services.user import UserService
-from app.services.auth import AuthService
-from app.api.routers import user, cover_letter, auth, job_posting
-from app.database import init_db
+from services.user import UserService
+from services.auth import AuthService
+from api.routers import user, cover_letter, auth, job_posting
+from database import init_db
 
 
 app = FastAPI()

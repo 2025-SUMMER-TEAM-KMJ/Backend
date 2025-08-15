@@ -2,8 +2,8 @@
 from typing import Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from app.core.security import decode_token
-from app.models.user_document import UserDocument
+from core.security import decode_token
+from models.user_document import UserDocument
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")  # 클라이언트 문서화용
 

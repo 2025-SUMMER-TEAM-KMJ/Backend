@@ -2,7 +2,7 @@
 from typing import Optional, Tuple, List, Dict, Any
 from bson import ObjectId
 from beanie import SortDirection
-from app.models.cover_letter_document import CoverLetterDocument
+from models.cover_letter_document import CoverLetterDocument
 
 class CoverLetterMongoDBRepository:
     # id로 자기소개서 조회

@@ -1,6 +1,6 @@
 # app/repositories/user_job_bookmark_repository.py
 from typing import Iterable, Set, List, Tuple
-from app.models.user_job_bookmark_document import UserJobBookmarkDocument
+from models.user_job_bookmark_document import UserJobBookmarkDocument
 from beanie import SortDirection
 
 class UserJobBookmarkRepository:

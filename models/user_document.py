@@ -4,7 +4,7 @@ from pydantic import EmailStr, HttpUrl, Field
 from typing import List, Optional, Literal
 
 # API 스키마 재사용
-from app.schemas.user import (
+from schemas.user import (
     Education, WorkExperience, Experience, PreferredPosition,
     Certification, QnA
 )

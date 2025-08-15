@@ -2,7 +2,7 @@
 from typing import Optional, Dict, Any
 from bson import ObjectId
 from passlib.hash import bcrypt
-from app.models.user_document import UserDocument
+from models.user_document import UserDocument
 
 class UserRepository:
     # 생성

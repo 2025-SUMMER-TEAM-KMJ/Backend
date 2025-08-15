@@ -1,9 +1,9 @@
 # app/api/routers/job_posting.py
 from typing import List, Optional, Dict, Any
 from fastapi import APIRouter, HTTPException, Query, Depends, status
-from app.services.job_posting import JobPostingService
-from app.schemas.job_posting import JobPostingResponse, JobPostingListResponse
-from app.deps.auth import get_current_user_id, get_optional_user_id
+from services.job_posting import JobPostingService
+from schemas.job_posting import JobPostingResponse, JobPostingListResponse
+from deps.auth import get_current_user_id, get_optional_user_id
 
 router = APIRouter(prefix="/job-postings", tags=["jobs"])
 svc = JobPostingService()

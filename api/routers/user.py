@@ -1,13 +1,13 @@
 # app/api/routers/user.py
 from fastapi import APIRouter, Depends, HTTPException, status, Request
-from app.schemas.user import SignUpRequest, UserUpdateRequest, UserResponse
-from app.deps.auth import get_current_user_id
+from schemas.user import SignUpRequest, UserUpdateRequest, UserResponse
+from deps.auth import get_current_user_id
 
 router = APIRouter(prefix="/users", tags=["users"])
 
 # 앱 state에서 서비스 꺼내는 의존성
 def get_user_service(request: Request):
-    return request.app.state.user_service
+    return request.state.user_service
 
 # 회원가입: POST /users/signup
 @router.post("/signup", response_model=UserResponse, status_code=status.HTTP_201_CREATED)

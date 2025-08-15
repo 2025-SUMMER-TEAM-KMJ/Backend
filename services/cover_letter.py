@@ -1,9 +1,9 @@
 # app/services/cover_letter.py
 from typing import Optional, Dict, Any
 from fastapi import HTTPException, status
-from app.repositories.cover_letter_repository import CoverLetterRepository
-from app.repositories.job_posting_repository import JobPostingRepository
-from app.schemas.cover_letter import (
+from repositories.cover_letter_repository import CoverLetterRepository
+from repositories.job_posting_repository import JobPostingRepository
+from schemas.cover_letter import (
     CoverLetterCreate, CoverLetterUpdate,
     CoverLetterResponse, CoverLetterListResponse,
 )

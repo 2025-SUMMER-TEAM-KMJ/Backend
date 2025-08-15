@@ -6,23 +6,15 @@ import jwt
 from dotenv import load_dotenv
 from passlib.context import CryptContext
 from typing import Optional, Dict, Any
+from settings import JWT_SECRET, JWT_ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_DAYS
 
-load_dotenv()
-
-# ===== Password hashing =====
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto") # Password Hashing
 
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
-
-# ===== JWT settings =====
-JWT_SECRET = os.getenv("JWT_SECRET", "dev-secret")
-JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
-REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "14"))
 
 def create_access_token(sub: str, extra_claims: Optional[Dict[str, Any]] = None) -> str:
     now = datetime.now(timezone.utc)

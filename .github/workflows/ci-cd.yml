@@ -58,7 +58,7 @@ jobs:
           key: ${{ secrets.VM_SSH_KEY }}
           port: 22
           script: |
-            APP_IMAGE_URI="${IMAGE_URI}" # 이전 단계에서 설정된 환경 변수 사용
+            APP_IMAGE_URI="${{ env.IMAGE_URI }}" # 이전 단계에서 설정된 환경 변수 사용
             APP_CONTAINER_NAME="${{ env.CONTAINER_NAME }}"
             
             # FastAPI 서버 포트 설정

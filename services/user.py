@@ -1,7 +1,9 @@
-# app/services/user.py
-from typing import Any, Dict
+# services/user.py
+import os
+from typing import Any, Dict, Tuple
 from schemas.user import SignUpRequest, UserUpdateRequest, UserResponse
 from repositories.user_repository import UserRepository
+from services import file
 
 class UserService:
     def __init__(self):
@@ -64,3 +66,49 @@ class UserService:
         if not updated:
             raise ValueError("업데이트 실패 또는 사용자를 찾을 수 없습니다.")
         return UserResponse.from_doc(updated.dict())
+
+    # 이미지 업로드
+    async def upload_profile_image(self, user_id: str, raw: bytes, content_type: str) -> Dict[str, Any]:
+        file.validate_file_request(raw, content_type)
+        extension = file.choose_file_extension(content_type)
+        if extension == "None":
+            raise ValueError("확장자 매칭에 실패했습니다.")
+
+        user = await self.repo.get_by_id(user_id)
+        if not user:
+            raise ValueError("사용자를 찾을 수 없습니다.")
+        old_profile_img_key = user.profile_img_key
+
+        key = f"users/{user_id}/profile/{os.urandom(8).hex()}.{extension}"
+        file.upload_file(key, raw, content_type)
+
+        await self.repo.update(user_id, {"profile_img_key": key})
+        if old_profile_img_key:
+            try:
+                file.delete_file(old_profile_img_key)
+            except Exception:
+                pass
+
+        return {"key": key, "contentType": content_type}
+
+    # 이미지 다운로드
+    async def download_profile_image(self, user_id: str) -> Tuple[bytes, str, str]:
+        user = await self.repo.get_by_id(user_id)
+        if not user or not user.profile_img_key:
+            raise ValueError("프로필 이미지가 존재하지 않습니다.")
+        data, content_type = file.download_file(user.profile_img_key)
+        file_name = os.path.basename(user.profile_img_key)
+        return data, content_type, file_name
+
+    # 이미지 삭제
+    async def delete_profile_image(self, user_id: str) -> Dict[str, Any]:
+        user = await self.repo.get_by_id(user_id)
+        if not user or not user.profile_img_key:
+            raise ValueError("프로필 이미지가 존재하지 않습니다.")
+        key = user.profile_img_key
+        try:
+            file.delete_file(key)
+        except Exception:
+            pass
+        await self.repo.update(user_id, {"profile_img_key": None})
+        return {"deleted": True, "key": key}

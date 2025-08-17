@@ -64,9 +64,6 @@ class UserUpdateRequest(BaseModel):
     age: Optional[int] = None
     phone: Optional[str] = None
 
-    # 프로필 이미지, 프론트는 <img src=key>와 같이 파일을 다운로드 받음 -> key로 진행할 수 있는지 확인 필요
-    profile_img_key: Optional[str] = None
-
     # URL
     urls: Optional[List[HttpUrl]] = None
 
@@ -96,7 +93,7 @@ class UserResponse(BaseModel):
     phone: str
 
     # 프로필 이미지, GCS Object key
-    profile_img: Optional[str] = None
+    profile_img_key: Optional[str] = None
 
     # 링크/URL
     urls: List[HttpUrl] = Field(default_factory=list)

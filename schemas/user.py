@@ -1,6 +1,7 @@
-# app/schemas/user.py
+# schemas/user.py
 from typing import Optional, List, Literal, Annotated, Mapping, Any
 from pydantic import BaseModel, EmailStr, HttpUrl, Field
+from datetime import datetime
 
 # 공통 타입
 Password = Annotated[str, Field(min_length=8)]
@@ -63,6 +64,9 @@ class UserUpdateRequest(BaseModel):
     age: Optional[int] = None
     phone: Optional[str] = None
 
+    # 프로필 이미지, 프론트는 <img src=key>와 같이 파일을 다운로드 받음 -> key로 진행할 수 있는지 확인 필요
+    profile_img_key: Optional[str] = None
+
     # URL
     urls: Optional[List[HttpUrl]] = None
 
@@ -90,6 +94,9 @@ class UserResponse(BaseModel):
     age: int
     gender: Literal["남성", "여성"]
     phone: str
+
+    # 프로필 이미지, GCS Object key
+    profile_img: Optional[str] = None
 
     # 링크/URL
     urls: List[HttpUrl] = Field(default_factory=list)
@@ -120,6 +127,8 @@ class UserResponse(BaseModel):
             gender=doc["gender"],
             phone=doc["phone"],
 
+            profile_img_key=doc.get("profile_img"),
+
             urls=(doc.get("urls") or []),
 
             brief=doc.get("brief"),
@@ -135,3 +144,4 @@ class UserResponse(BaseModel):
 
             interest_jobs=(doc.get("interest_jobs") or [])
         )
+

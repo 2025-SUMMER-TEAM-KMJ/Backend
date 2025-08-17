@@ -15,3 +15,8 @@ REFRESH_TOKEN_EXPIRE_DAYS = 14
 
 # Gemini Configs
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+
+# GCS
+BUCKET = os.getenv("BUCKET")
+GCP_SA_KEY = os.getenv("GCP_SA_KEY")
+GCP_PROJECT_ID = os.getenv("GCP_PROJECT_ID")

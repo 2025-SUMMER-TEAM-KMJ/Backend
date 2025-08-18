@@ -58,7 +58,7 @@ jobs:
           key: ${{ secrets.VM_SSH_KEY }}
           port: 22
           script: |
-            APP_IMAGE_URI="${IMAGE_URI}" # 이전 단계에서 설정된 환경 변수 사용
+            APP_IMAGE_URI="${{ env.IMAGE_URI }}" # 이전 단계에서 설정된 환경 변수 사용
             APP_CONTAINER_NAME="${{ env.CONTAINER_NAME }}"
             
             # FastAPI 서버 포트 설정
@@ -66,14 +66,14 @@ jobs:
             APP_PORT_CONTAINER="${{ env.APP_PORT_HOST }}"
 
             echo "Stopping and removing existing container (if any)..."
-            docker stop ${APP_CONTAINER_NAME} || true
-            docker rm ${APP_CONTAINER_NAME} || trueS
+            sudo docker stop ${APP_CONTAINER_NAME} || true
+            sudo docker rm ${APP_CONTAINER_NAME} || true
 
             echo "Pulling latest Docker image: ${APP_IMAGE_URI}..."
-            docker pull ${APP_IMAGE_URI}
+            sudo docker pull ${APP_IMAGE_URI}
 
             echo "Running new Docker container..."
-            docker run -d \
+            sudo docker run -d \
               --add-host="localhost:host-gateway" \
               --name ${APP_CONTAINER_NAME} \
               -p ${{ env.APP_PORT_HOST }}:${{ env.APP_PORT_HOST }} \

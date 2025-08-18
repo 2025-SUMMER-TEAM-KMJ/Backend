@@ -3,6 +3,8 @@ from typing import Optional, Tuple, List, Dict, Any
 from bson import ObjectId
 from beanie import SortDirection
 from models.cover_letter_document import CoverLetterDocument
+from datetime import datetime, timezone
+from uuid import UUID
 
 class CoverLetterMongoDBRepository:
     # id로 자기소개서 조회
@@ -43,8 +45,6 @@ class CoverLetterMongoDBRepository:
         if not doc:
             return None
 
-        # updated_at 갱신
-        from datetime import datetime, timezone
         to_set = dict(payload)
         to_set["updated_at"] = datetime.now(timezone.utc)
 
@@ -58,3 +58,23 @@ class CoverLetterMongoDBRepository:
             return False
         await doc.delete()
         return True
+
+    # === QnA(qna 생성 관련은 rag에서 진행, 각 질문에 대한 답변) ===
+
+    # qna 수정(유저가 수정 진행)
+    async def update_qna(self, cl_id: str, qna_id: UUID, fields: Dict[str, Any]) -> Optional[CoverLetterDocument]:
+        doc = await self.get_by_id(cl_id)
+        if not doc:
+            return None
+        fields["qnas.$[elem].updated_at"] = datetime.now(timezone.utc)
+        await doc.update({"$set": fields}, array_filters=[{"elem.id": qna_id}])
+        return await self.get_by_id(cl_id)
+
+    # qna 삭제
+    async def delete_qna(self, cl_id: str, qna_id: UUID) -> Optional[CoverLetterDocument]:
+        doc = await self.get_by_id(cl_id)
+        if not doc:
+            return None
+        now = datetime.now(timezone.utc)
+        await doc.update({"$pull": {"qnas": {"id": qna_id}}, "$set": {"updated_at": now}})
+        return await self.get_by_id(cl_id)

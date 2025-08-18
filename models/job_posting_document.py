@@ -2,7 +2,7 @@
 from typing import Any, Dict, List, Optional
 from datetime import datetime
 from beanie import Document, Indexed
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 # 회사 주소
 class CompanyAddress(BaseModel):
@@ -48,6 +48,21 @@ class JobPostingDocument(Document):
     sourceData: Optional[str] = None
     status: Optional[str] = "active"
     title_images: List[str] = Field(default_factory=list)
+
+    @field_validator("skill_tags", "title_images", mode="before")
+    @classmethod
+    def _normalize_str_list(cls, v):
+        # None -> []
+        if v is None:
+            return []
+        # set/tuple -> list
+        if isinstance(v, (set, tuple)):
+            v = list(v)
+        # 리스트라면 내부의 None/공백 제거
+        if isinstance(v, list):
+            return [s for s in v if isinstance(s, str) and s.strip()]
+        # 그 외 타입이면 방어적으로 빈 리스트
+        return []
 
     class Settings:
         name = "wanted_job_postings"  # 컬렉션명

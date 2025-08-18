@@ -25,7 +25,8 @@ class JobPostingRepository:
         q가 없거나 빈 문자열이면 전체 최신순.
         q가 있으면 RAG.
         """
-        if not q or not q.strip():
+        q_norm = (q or "").strip().lower()
+        if q_norm in ("", "null", "undefined"):
             return await self.list_recent(offset=offset, limit=limit)
 
         # RAG repository 관련 로직 추가 필요

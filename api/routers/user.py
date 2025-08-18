@@ -7,7 +7,7 @@ router = APIRouter(prefix="/users", tags=["users"])
 
 # 앱 state에서 서비스 꺼내는 의존성
 def get_user_service(request: Request):
-    return request.state.user_service
+    return request.app.state.user_service
 
 # 회원가입: POST /users/signup
 @router.post("/signup",

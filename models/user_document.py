@@ -1,4 +1,4 @@
-# app/models/user_document.py
+# models/user_document.py
 from beanie import Document, Indexed
 from pydantic import EmailStr, HttpUrl, Field
 from typing import List, Optional, Literal
@@ -17,6 +17,9 @@ class UserDocument(Document):
     age: int
     gender: Literal["남성", "여성"]
     phone: str
+
+    # 프로필 이미지, object key만 저장
+    profile_img_key: Optional[str] = None
 
     # URL
     urls: List[HttpUrl] = Field(default_factory=list)

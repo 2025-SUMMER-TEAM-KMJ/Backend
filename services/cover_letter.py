@@ -1,11 +1,12 @@
 # app/services/cover_letter.py
 from typing import Optional, Dict, Any
 from fastapi import HTTPException, status
+from uuid import UUID
 from repositories.cover_letter_repository import CoverLetterRepository
 from repositories.job_posting_repository import JobPostingRepository
 from schemas.cover_letter import (
     CoverLetterCreate, CoverLetterUpdate,
-    CoverLetterResponse, CoverLetterListResponse,
+    CoverLetterResponse, CoverLetterListResponse, QnACreate, QnAUpdate
 )
 
 class CoverLetterService:
@@ -63,3 +64,40 @@ class CoverLetterService:
         if not ok:
             raise HTTPException(status_code=400, detail="삭제 실패")
         return {"deleted": True, "id": cl_id}
+
+    # === 자기소개서 항목 관련 로직 ===
+    # 자기소개서 항목 추가
+    async def create_qna(self, user_id: str, cl_id: str, body: QnACreate) -> CoverLetterResponse:
+        # RAG로 처리 예정
+        pass
+
+    # 자기소개서 항목 수정
+    async def update_qna(self, user_id: str, cl_id: str, qna_id: UUID, body: QnAUpdate) -> CoverLetterResponse:
+        doc = await self.repo.get_by_id(cl_id)
+        if not doc or doc.user_id != user_id:
+            raise HTTPException(status_code=404, detail="자기소개서를 찾을 수 없습니다.")
+
+        fields: Dict[str, Any] = {}
+        if body.question is not None:
+            fields["qnas.$[elem].question"] = body.question
+        if body.answer is not None:
+            fields["qnas.$[elem].answer"] = body.answer
+
+        if not fields:
+            return CoverLetterResponse.from_doc(doc)
+
+        updated = await self.repo.update_qna(cl_id, qna_id, fields)
+        if not updated:
+            raise HTTPException(status_code=404, detail="문항을 찾을 수 없습니다.")
+        return CoverLetterResponse.from_doc(updated)
+
+    # 자기소개서 항목 삭제
+    async def delete_qna(self, user_id: str, cl_id: str, qna_id: UUID) -> CoverLetterResponse:
+        doc = await self.repo.get_by_id(cl_id)
+        if not doc or doc.user_id != user_id:
+            raise HTTPException(status_code=404, detail="자기소개서를 찾을 수 없습니다.")
+
+        updated = await self.repo.delete_qna(cl_id, qna_id)
+        if not updated:
+            raise HTTPException(status_code=404, detail="문항을 찾을 수 없습니다.")
+        return CoverLetterResponse.from_doc(updated)

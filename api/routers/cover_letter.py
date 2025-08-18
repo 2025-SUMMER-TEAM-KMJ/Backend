@@ -1,10 +1,12 @@
 # app/api/routers/cover_letter.py
+from http import HTTPStatus
 from typing import Optional
+from uuid import UUID
 from fastapi import APIRouter, Depends, Query, HTTPException, status
 from deps.auth import get_current_user_id
 from schemas.cover_letter import (
     CoverLetterCreate, CoverLetterUpdate,
-    CoverLetterResponse, CoverLetterListResponse,
+    CoverLetterResponse, CoverLetterListResponse, QnACreate, QnAUpdate
 )
 from services.cover_letter import CoverLetterService
 
@@ -49,3 +51,29 @@ async def delete_cover_letter(
     user_id: str = Depends(get_current_user_id),
 ):
     return await svc.delete(user_id, cl_id)
+
+# === 자기소개서 항목 관련 로직===
+@router.post("/{cl_id}/qnas", response_model=CoverLetterResponse, status_code=HTTPStatus.CREATED, summary="자기소개서 항목 생성")
+async def create_qna(
+    cl_id: str,
+    body: QnACreate,
+    user_id: str = Depends(get_current_user_id)
+):
+    return await svc.create_qna(user_id, cl_id, body)
+
+@router.patch("/{cl_id}/qnas/{qna_id}", response_model=CoverLetterResponse, summary="문항 수정 (유저가 question/answer 수정)")
+async def update_qna(
+    cl_id: str,
+    qna_id: UUID,
+    body: QnAUpdate,
+    user_id: str = Depends(get_current_user_id)
+):
+    return await svc.update_qna(user_id, cl_id, qna_id, body)
+
+@router.delete("/{cl_id}/qnas/{qna_id}", response_model=CoverLetterResponse, summary="문항 삭제")
+async def delete_qna(
+    cl_id: str,
+    qna_id: UUID,
+    user_id: str = Depends(get_current_user_id),
+):
+    return await svc.delete_qna(user_id, cl_id, qna_id)

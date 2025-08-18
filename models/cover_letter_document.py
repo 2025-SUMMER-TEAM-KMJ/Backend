@@ -2,7 +2,15 @@
 from datetime import datetime, timezone
 from typing import Optional, Literal, List
 from beanie import Document, Indexed
-from pydantic import Field
+from pydantic import Field, BaseModel
+from uuid import UUID
+
+class QnA(BaseModel):
+    id: UUID
+    question: str
+    answer: str
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
 
 class CoverLetterDocument(Document):
     """
@@ -12,9 +20,9 @@ class CoverLetterDocument(Document):
     """
     user_id: Indexed(str) = Field(...)  # UserDocument.id (str)
     title: str
-    content: str
     type: Literal["profile", "job_posting"]
     job_posting_id: Optional[str] = None
+    qnas: List[QnA] = Field(default_factory=list)
 
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
@@ -25,3 +33,4 @@ class CoverLetterDocument(Document):
             [("user_id", 1), ("updated_at", -1)],
             [("user_id", 1), ("type", 1), ("updated_at", -1)],
         ]
+

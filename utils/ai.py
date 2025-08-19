@@ -1,6 +1,10 @@
 import google.generativeai as genai
 import os
 
+# --- Gemini setup (사용 중인 키/모델 유지) ---
+genai.configure(api_key="AIzaSyCejgjuCnmrzsZfcSwPOcq02AOBxKM7bH0")
+model = genai.GenerativeModel("models/gemini-2.5-flash")
+
 try:
     genai.configure(api_key="YOUR_API_KEY")
     model = genai.GenerativeModel('gemini-2.0-flash')

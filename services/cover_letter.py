@@ -2,26 +2,58 @@
 from typing import Optional, Dict, Any
 from fastapi import HTTPException, status
 from uuid import UUID
+from models.cover_letter_document import CoverLetterDocument, QnA
 from repositories.cover_letter_repository import CoverLetterRepository
 from repositories.job_posting_repository import JobPostingRepository
+from repositories.user_repository import UserRepository
 from schemas.cover_letter import (
     CoverLetterCreate, CoverLetterUpdate,
     CoverLetterResponse, CoverLetterListResponse, QnACreate, QnAUpdate
 )
+from utils import prompts
+from utils.ai import get_gemini_response
 
 class CoverLetterService:
     def __init__(
         self,
         repo: Optional[CoverLetterRepository] = None,
         job_repo: Optional[JobPostingRepository] = None,
+        user_repo: Optional[UserRepository] = None,
     ):
         self.repo = repo or CoverLetterRepository()
         self.jobs = job_repo or JobPostingRepository()
+        self.user_repo = user_repo or UserRepository()
 
     async def create(self, user_id: str, req: CoverLetterCreate) -> CoverLetterResponse:
-        pass
-        # RAG로 처리 필요
+        user_profile = await self.user_repo.get_by_id(user_id)
+        if user_profile is None:
+            raise ValueError('존재하지 않는 유저입니다.')
+    
+        if req.type == 'profile':
+            content = get_gemini_response(prompts.get_profile_cover_letter_prompt(user_profile.name, user_profile.age, user_profile))
+            strength = get_gemini_response(prompts.get_profile_cover_letter_strength_prompt(content))
 
+        elif req.type == 'job_posting':
+            profile_cover_letter = await self.repo.list_by_user(user_id, 0, 1, type_filter='profile')
+            
+            if profile_cover_letter[1] <= 0:
+                raise ValueError('프로필 기반 자기소개서를 먼저 만들어야 합니다.')
+            profile_cover_letter = profile_cover_letter[0][0]
+            job = await self.jobs.get_by_id(req.job_posting_id)
+            
+            strength = get_gemini_response(prompts.get_job_cover_letter_strength_prompt(profile_cover_letter, job.detail.position.job, 
+                                                                                job.detail.intro, job.detail.main_tasks, job.detail.requirements, job.detail.preferred_points,
+                                                                                question))
+            weakness = get_gemini_response(prompts.get_job_cover_letter_weakness_prompt(profile_cover_letter, job.detail.position.job, 
+                                                                                job.detail.intro, job.detail.main_tasks, job.detail.requirements, job.detail.preferred_points,
+                                                                                question))
+            for qna in req.qnas:
+                question = qna.question
+                answer = get_gemini_response(prompts.get_job_cover_letter_prompt(profile_cover_letter, job.detail.position.job, 
+                                                                                job.detail.intro, job.detail.main_tasks, job.detail.requirements, job.detail.preferred_points,
+                                                                                question))
+        
+        
     async def get(self, user_id: str, cl_id: str) -> CoverLetterResponse:
         doc = await self.repo.get_by_id(cl_id)
         if not doc or doc.user_id != user_id:

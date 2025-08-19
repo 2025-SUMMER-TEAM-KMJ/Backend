@@ -22,6 +22,8 @@ class CoverLetterDocument(Document):
     title: str
     type: Literal["profile", "job_posting"]
     job_posting_id: Optional[str] = None
+    strength: Optional[List[str]] = []
+    weakness: Optional[List[str]] = []
     qnas: List[QnA] = Field(default_factory=list)
 
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

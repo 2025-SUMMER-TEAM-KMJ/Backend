@@ -1,5 +1,5 @@
 import re, json
-from ai import get_gemini_response
+from utils.ai import get_gemini_response
 
 BUCKET_SET = {
     "security","design","product","marketing","sales","cs",

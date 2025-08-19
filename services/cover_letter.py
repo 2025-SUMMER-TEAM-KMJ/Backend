@@ -37,10 +37,17 @@ class CoverLetterService:
 
         # LLM 답변 생성 자리
         # 답변 생성: 여기서 LLM을 호출해 payload["qnas"] 각 항목에 answer 필드 채우기
-        #     
+        payload["qnas"] = []
+
         if req.type == 'profile':
             content = get_gemini_response(prompts.get_profile_cover_letter_prompt(user_profile.name, user_profile.age, user_profile))
             strength = get_gemini_response(prompts.get_profile_cover_letter_strength_prompt(content))
+            payload["qnas"].append({
+                "question": "나의 자기소개서",
+                "answer": content
+            })
+            payload["strength"] = strength
+
         elif req.type == 'job_posting':
             profile_cover_letter = await self.repo.list_by_user(user_id, 0, 1, type_filter='profile')
             
@@ -55,13 +62,21 @@ class CoverLetterService:
             weakness = get_gemini_response(prompts.get_job_cover_letter_weakness_prompt(profile_cover_letter, job.detail.position.job, 
                                                                                 job.detail.intro, job.detail.main_tasks, job.detail.requirements, job.detail.preferred_points,
                                                                                 question))
+            payload["strength"] = strength
+            payload["weakness"] = weakness
+            
             for qna in req.qnas:
                 question = qna.question
                 answer = get_gemini_response(prompts.get_job_cover_letter_prompt(profile_cover_letter, job.detail.position.job, 
                                                                                 job.detail.intro, job.detail.main_tasks, job.detail.requirements, job.detail.preferred_points,
                                                                                 question))
-
+                payload["qnas"].append({
+                    "question": question,
+                    "answer": answer
+                })
+                
         created = await self.repo.create(payload)
+        return CoverLetterResponse.from_doc(created)
 
     async def get(self, user_id: str, cl_id: str) -> CoverLetterResponse:
         doc = await self.repo.get_by_id(cl_id)

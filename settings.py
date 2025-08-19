@@ -20,3 +20,7 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 BUCKET = os.getenv("BUCKET")
 GCP_SA_KEY = os.getenv("GCP_SA_KEY")
 GCP_PROJECT_ID = os.getenv("GCP_PROJECT_ID")
+
+# VectorDB
+VC_HOST = os.getenv("VC_HOST")
+VC_PORT = os.getenv("VC_PORT")

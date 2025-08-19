@@ -4,7 +4,7 @@ from bson import ObjectId
 from beanie import SortDirection
 from models.cover_letter_document import CoverLetterDocument
 from datetime import datetime, timezone
-from uuid import UUID
+from uuid import UUID, uuid4
 
 class CoverLetterMongoDBRepository:
     # id로 자기소개서 조회
@@ -39,6 +39,12 @@ class CoverLetterMongoDBRepository:
         )
         return docs, total
 
+    # 자기소개서 생성
+    async def create(self, doc: Dict[str, Any]) -> CoverLetterDocument:
+        cover_letter = CoverLetterDocument(**doc)
+        await cover_letter.insert()
+        return cover_letter
+
     # 자기소개서 수정
     async def update_partial(self, cl_id: str, payload: Dict[str, Any]) -> Optional[CoverLetterDocument]:
         doc = await CoverLetterDocument.get(ObjectId(cl_id))
@@ -60,6 +66,28 @@ class CoverLetterMongoDBRepository:
         return True
 
     # === QnA(qna 생성 관련은 rag에서 진행, 각 질문에 대한 답변) ===
+    # qna 생성
+    async def create_qna(self, cl_id: str, payload: Dict[str, Any]) -> Optional[CoverLetterDocument]:
+        doc = await self.get_by_id(cl_id)
+        if not doc:
+            return None
+
+        now = datetime.now(timezone.utc)
+        qna_to_insert: Dict[str, Any] = {
+            "id": uuid4(),
+            "question": payload["question"],
+            "answer": payload.get("answer"),  # None 또는 "" 허용
+            "created_at": now,
+            "updated_at": now,
+        }
+
+        await doc.update(
+            {
+                "$push": {"qnas": qna_to_insert},
+                "$set": {"updated_at": now},
+            }
+        )
+        return await self.get_by_id(cl_id)
 
     # qna 수정(유저가 수정 진행)
     async def update_qna(self, cl_id: str, qna_id: UUID, fields: Dict[str, Any]) -> Optional[CoverLetterDocument]:

@@ -6,7 +6,7 @@ from pydantic import Field
 
 class UserJobBookmarkDocument(Document):
     user_id: Indexed(str) = Field(...)   # UserDocument의 id (문자열)
-    job_id: Indexed(str)  = Field(...)  # JobPostingDocument의 id (문자열)
+    job_id: Indexed(str) = Field(...)  # JobPostingDocument의 id (문자열)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     class Settings:

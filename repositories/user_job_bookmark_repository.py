@@ -2,6 +2,8 @@
 from typing import Iterable, Set, List, Tuple
 from models.user_job_bookmark_document import UserJobBookmarkDocument
 from beanie import SortDirection
+from beanie.operators import In
+
 
 class UserJobBookmarkRepository:
     # 북마크한 공고인지 확인
@@ -20,15 +22,18 @@ class UserJobBookmarkRepository:
         if not ids:
             return set()
 
-        docs = await UserJobBookmarkDocument.find(
-            UserJobBookmarkDocument.user_id == user_id,
-            UserJobBookmarkDocument.job_id.in_(ids),
-        ).to_list()
+        docs = await (
+            UserJobBookmarkDocument.find(
+                UserJobBookmarkDocument.user_id == user_id,
+                In(UserJobBookmarkDocument.job_id, job_ids)
+            )
+            .to_list()
+        )
         return {d.job_id for d in docs}
 
     # 북마크한 공고들 반환
     async def list_user_bookmark_ids(
-        self, user_id: str, skip: int, limit: int
+            self, user_id: str, skip: int, limit: int
     ) -> Tuple[List[str], int]:
         total = await UserJobBookmarkDocument.find(
             UserJobBookmarkDocument.user_id == user_id

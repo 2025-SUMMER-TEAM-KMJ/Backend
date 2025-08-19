@@ -1,12 +1,12 @@
 # app/api/routers/auth.py
-from fastapi import APIRouter, Response, Cookie, Depends
+from fastapi import APIRouter, Request, Response, Cookie, Depends
 from schemas.auth import LoginRequest, TokenResponse
 from services.auth import AuthService
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-def get_auth_service(request) -> AuthService:
-    return request.state.auth_service
+def get_auth_service(request: Request) -> AuthService:
+    return request.app.state.auth_service
 
 @router.post("/login", response_model=TokenResponse)
 async def login_endpoint(creds: LoginRequest, resp: Response, svc: AuthService = Depends(get_auth_service)):

@@ -5,9 +5,13 @@ from fastapi.security import OAuth2PasswordBearer
 from core.security import decode_token
 from models.user_document import UserDocument
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")  # 클라이언트 문서화용
+# 인증 필수: 기본 OAuth2 스킴 (없으면 401)
+oauth2_scheme_required = OAuth2PasswordBearer(tokenUrl="/auth/login", auto_error=True)
 
-async def get_current_user_id(token: str = Depends(oauth2_scheme)) -> str:
+# 인증 선택: 없으면 그냥 None 반환
+oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="/auth/login", auto_error=False)
+
+async def get_current_user_id(token: str = Depends(oauth2_scheme_required)) -> str:
     """
     Authorization: Bearer <access_token> 에서 user_id(sub) 추출 및 검증.
     실제 유저 존재 여부도 확인.
@@ -31,7 +35,7 @@ async def get_current_user_id(token: str = Depends(oauth2_scheme)) -> str:
     return user_id
 
 async def get_optional_user_id(
-    token: Optional[str] = Depends(oauth2_scheme)
+    token: Optional[str] = Depends(oauth2_scheme_optional)
 ) -> Optional[str]:
     """
     로그인하지 않은 경우 None 반환.

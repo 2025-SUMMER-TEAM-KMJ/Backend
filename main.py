@@ -8,9 +8,6 @@ from services.auth import AuthService
 from api.routers import user, cover_letter, auth, job_posting
 from database import init_db
 
-
-app = FastAPI()
-
 '''
 프론트엔드에서 API 호출 시 CORS 허용할 Origin(출처) 목록
 - 여기 등록된 도메인에서만 브라우저가 쿠키/헤더를 포함해 요청 가능
@@ -56,7 +53,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,  # ← 쿠키/인증 헤더 허용
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 

@@ -80,10 +80,13 @@ jobs:
               --restart always \
               -e MONGO_URI="${{ secrets.MONGO_URI }}" \
               -e DB_NAME="${{ secrets.DB_NAME }}" \
+              -e JWT_SECRET="${{ secrets.JWT_SECRET }}" \
               -e GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
               -e GEMINI_MODEL="${{ vars.GEMINI_MODEL }}" \
-              -e DB_NAME="${{ secrets.DB_NAME }}" \
-              -e JWT_SECRET_KEY="${{ secrets.JWT_SECRET_KEY }}" \
+              -e BUCKET="${{ secrets.BUCKET }}" \
+              -e GCP_SA_KEY="${{ secrets.GCP_SA_KEY }}" \
+              -e GCP_PROJECT_ID="${{ secrets.GCP_PROJECT_ID }}" \
+              -e VC_HOST="${{ secrets.VM_SSH_HOST }}" \
               ${APP_IMAGE_URI}
 
             echo "Deployment to Compute Engine completed successfully!"

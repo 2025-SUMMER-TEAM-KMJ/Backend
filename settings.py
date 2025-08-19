@@ -15,6 +15,7 @@ REFRESH_TOKEN_EXPIRE_DAYS = 14
 
 # Gemini Configs
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL")
 
 # GCS
 BUCKET = os.getenv("BUCKET")
@@ -23,4 +24,4 @@ GCP_PROJECT_ID = os.getenv("GCP_PROJECT_ID")
 
 # VectorDB
 VC_HOST = os.getenv("VC_HOST")
-VC_PORT = os.getenv("VC_PORT")
+VC_PORT = os.getenv("VC_PORT", 8000)

@@ -42,6 +42,8 @@ class JobPostingResponse(BaseModel):
     company: JobPostingCompany
     detail: JobPostingDetail
 
+    due_time: Optional[datetime] = None
+
     externalUrl: Optional[HttpUrl] = None
     skill_tags: List[str] = Field(default_factory=list)
     sourceData: Optional[str] = None

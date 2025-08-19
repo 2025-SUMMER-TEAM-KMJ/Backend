@@ -43,6 +43,8 @@ class JobPostingDocument(Document):
     company: Company
     detail: Detail
 
+    due_time: Optional[datetime] = None
+
     externalUrl: Optional[str] = None
     skill_tags: List[str] = Field(default_factory=list)
     sourceData: Optional[str] = None

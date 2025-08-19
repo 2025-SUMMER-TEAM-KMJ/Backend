@@ -9,11 +9,10 @@ import numpy as np
 from where_minimal import build_where_from_llm
 
 # ── Chroma ──
-# ── Chroma ──
-from chromadb import PersistentClient  # <-- 바꾸기
+from chromadb import PersistentClient
 
-PERSIST_DIR = r""  # 경로 변경 : 앞서 돌린 chunk_indexing.py 코드에서 chroma_db를 만들음. 해당 경로로 변경
-vc_client = PersistentClient(path=PERSIST_DIR)  # <-- 디스크 열기
+PERSIST_DIR = r""  # chroma_db의 경로로 변경
+vc_client = PersistentClient(path=PERSIST_DIR) 
 vc_collection = vc_client.get_or_create_collection(
     "master_job_postings",
     metadata={"hnsw:space": "cosine"}
@@ -114,12 +113,3 @@ def search(
 
     job_ids = [sid for sid, _ in ranked_all[start:end]]
     return job_ids
-
-# ── 실행 예시 ──
-if __name__ == "__main__":
-    result_job_ids = search(
-        "자율 출퇴근 가능한 회사 알려줘",
-        offset=0,
-        limit=3,
-    )
-    print(result_job_ids)

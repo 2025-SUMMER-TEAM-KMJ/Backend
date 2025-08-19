@@ -1,7 +1,8 @@
 # api/routers/user.py
 from fastapi import APIRouter, Depends, HTTPException, status, Request, Response
-from schemas.user import SignUpRequest, UserUpdateRequest, UserResponse
+from schemas.user import SignUpRequest, UserUpdateRequest, UserResponse, QnACreate, QnAUpdate
 from deps.auth import get_current_user_id
+from uuid import UUID
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -109,3 +110,50 @@ async def delete_profile_image(user_id: str = Depends(get_current_user_id), svc=
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except Exception:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="이미지 삭제를 실패하였습니다.")
+
+# === QNA ===
+@router.post(
+    "/qnas",
+    response_model=UserResponse,
+    summary="QnA 항목 추가"
+)
+async def add_qna(
+    body: QnACreate,
+    user_id: str = Depends(get_current_user_id),
+    svc=Depends(get_user_service),
+):
+    try:
+        return await svc.add_qna(user_id, body)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+@router.patch(
+    "/qnas/{qna_id}",
+    response_model=UserResponse,
+    summary="QnA 항목 수정"
+)
+async def update_qna(
+    qna_id: UUID,
+    body: QnAUpdate,
+    user_id: str = Depends(get_current_user_id),
+    svc=Depends(get_user_service),
+):
+    try:
+        return await svc.update_qna(user_id, qna_id, body)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+@router.delete(
+    "/qnas/{qna_id}",
+    response_model=UserResponse,
+    summary="QnA 항목 삭제"
+)
+async def delete_qna(
+    qna_id: UUID,
+    user_id: str = Depends(get_current_user_id),
+    svc=Depends(get_user_service),
+):
+    try:
+        return await svc.delete_qna(user_id, qna_id)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))

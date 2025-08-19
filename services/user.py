@@ -1,9 +1,11 @@
 # services/user.py
 import os
 from typing import Any, Dict, Tuple
-from schemas.user import SignUpRequest, UserUpdateRequest, UserResponse
+from schemas.user import SignUpRequest, UserUpdateRequest, UserResponse, QnACreate, QnAUpdate
 from repositories.user_repository import UserRepository
 from services import file
+from uuid import UUID, uuid4
+from datetime import datetime, timezone
 
 class UserService:
     def __init__(self):
@@ -112,3 +114,31 @@ class UserService:
             pass
         await self.repo.update(user_id, {"profile_img_key": None})
         return {"deleted": True, "key": key}
+
+    # === QNA ===
+    async def add_qna(self, user_id: str, body: QnACreate) -> UserResponse:
+        qna = {
+            "id": uuid4(),
+            "title": body.title,
+            "content": body.content,
+            "category": body.category,
+            "created_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(timezone.utc),
+        }
+        updated = await self.repo.add_qna(user_id, qna)
+        if not updated:
+            raise ValueError("사용자를 찾을 수 없습니다.")
+        return UserResponse.from_doc(updated.dict())
+
+    async def update_qna(self, user_id: str, qna_id: UUID, body: QnAUpdate) -> UserResponse:
+        fields = body.model_dump(exclude_unset=True)
+        updated = await self.repo.update_qna(user_id, qna_id, fields)
+        if not updated:
+            raise ValueError("사용자 또는 QnA를 찾을 수 없습니다.")
+        return UserResponse.from_doc(updated.dict())
+
+    async def delete_qna(self, user_id: str, qna_id: UUID) -> UserResponse:
+        updated = await self.repo.delete_qna(user_id, qna_id)
+        if not updated:
+            raise ValueError("사용자 또는 QnA를 찾을 수 없습니다.")
+        return UserResponse.from_doc(updated.dict())

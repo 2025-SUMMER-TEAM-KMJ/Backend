@@ -1,10 +1,5 @@
-# where_minimal.py
 import re, json
-import google.generativeai as genai
-
-# --- Gemini setup (사용 중인 키/모델 유지) ---
-genai.configure(api_key="AIzaSyCejgjuCnmrzsZfcSwPOcq02AOBxKM7bH0")
-model = genai.GenerativeModel("models/gemini-2.5-flash")
+from ai import get_gemini_response
 
 BUCKET_SET = {
     "security","design","product","marketing","sales","cs",
@@ -104,7 +99,7 @@ def _extract_json(text: str) -> dict:
 # ===== 빌더 =====
 def build_where_from_llm(query: str) -> dict:
     # 1) LLM 호출
-    resp = model.generate_content(PROMPT.format(query=query))
+    resp = get_gemini_response(PROMPT.format(query=query))
     txt = (getattr(resp, "text", "") or "").strip()
     obj = _extract_json(txt)
 

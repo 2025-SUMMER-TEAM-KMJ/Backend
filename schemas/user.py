@@ -2,6 +2,7 @@
 from typing import Optional, List, Literal, Annotated, Mapping, Any
 from pydantic import BaseModel, EmailStr, HttpUrl, Field
 from datetime import datetime
+from uuid import UUID, uuid4
 
 # 공통 타입
 Password = Annotated[str, Field(min_length=8)]
@@ -54,7 +55,20 @@ class Certification(BaseModel):
 
 # QnA
 class QnA(BaseModel):
+    id: UUID = Field(default_factory=uuid4)
     title: str
+    content: Optional[str] = None
+    category: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
+
+class QnACreate(BaseModel):
+    title: str
+    content: Optional[str] = None
+    category: Optional[str] = None
+
+class QnAUpdate(BaseModel):
+    title: Optional[str] = None
     content: Optional[str] = None
     category: Optional[str] = None
 
@@ -124,7 +138,7 @@ class UserResponse(BaseModel):
             gender=doc["gender"],
             phone=doc["phone"],
 
-            profile_img_key=doc.get("profile_img"),
+            profile_img_key=doc.get("profile_img_key"),
 
             urls=(doc.get("urls") or []),
 
@@ -141,4 +155,3 @@ class UserResponse(BaseModel):
 
             interest_jobs=(doc.get("interest_jobs") or [])
         )
-

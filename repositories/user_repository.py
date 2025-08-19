@@ -3,6 +3,8 @@ from typing import Optional, Dict, Any
 from bson import ObjectId
 from passlib.hash import bcrypt
 from models.user_document import UserDocument
+from uuid import UUID
+from datetime import datetime, timezone
 
 class UserRepository:
     # 생성
@@ -57,3 +59,28 @@ class UserRepository:
 
         return await self.get_by_id(user_id)
 
+    # === QNA ===
+    async def add_qna(self, user_id: str, qna: Dict[str, Any]) -> Optional[UserDocument]:
+        await UserDocument.find_one(UserDocument.id == ObjectId(user_id)).update({
+            "$push": {"qnas": qna}
+        })
+        return await self.get_by_id(user_id)
+
+    async def update_qna(self, user_id: str, qna_id: UUID, fields: Dict[str, Any]) -> Optional[UserDocument]:
+        if not fields:
+            return await self.get_by_id(user_id)
+        # updated_at 자동 갱신
+        fields = {f"qnas.$[elem].{k}": v for k, v in fields.items()}
+        fields["qnas.$[elem].updated_at"] = datetime.now(timezone.utc)
+
+        await UserDocument.find_one(UserDocument.id == ObjectId(user_id)).update(
+            {"$set": fields},
+            array_filters=[{"elem.id": qna_id}]
+        )
+        return await self.get_by_id(user_id)
+
+    async def delete_qna(self, user_id: str, qna_id: UUID) -> Optional[UserDocument]:
+        await UserDocument.find_one(UserDocument.id == ObjectId(user_id)).update({
+            "$pull": {"qnas": {"id": qna_id}}
+        })
+        return await self.get_by_id(user_id)

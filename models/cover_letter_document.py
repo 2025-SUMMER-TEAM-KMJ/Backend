@@ -3,12 +3,12 @@ from datetime import datetime, timezone
 from typing import Optional, Literal, List
 from beanie import Document, Indexed
 from pydantic import Field, BaseModel
-from uuid import UUID
+from uuid import UUID, uuid4
 
 class QnA(BaseModel):
-    id: UUID
+    id: UUID = Field(default_factory=uuid4)
     question: str
-    answer: str
+    answer: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
 

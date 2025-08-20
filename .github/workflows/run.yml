@@ -45,6 +45,6 @@ jobs:
               -e GCP_SA_KEY="${{ secrets.GCP_SA_KEY }}" \
               -e GCP_PROJECT_ID="${{ secrets.GCP_PROJECT_ID }}" \
               -e VC_HOST="${{ secrets.VM_SSH_HOST }}" \
-              ${{ github.event.inputs.image_uri }}
+              "${{ github.event.inputs.image_uri }}"
 
             echo "Deployment to Compute Engine completed successfully!"

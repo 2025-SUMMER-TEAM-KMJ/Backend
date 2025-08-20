@@ -53,6 +53,7 @@ jobs:
       - name: Deploy to Compute Engine via SSH # 6. Compute Engine 인스턴스에 SSH로 접속하여 배포
         uses: appleboy/ssh-action@v0.1.6
         with:
+          command_timeout: 30m
           host: ${{ secrets.VM_SSH_HOST }}
           username: ${{ secrets.VM_SSH_USER }}
           key: ${{ secrets.VM_SSH_KEY }}

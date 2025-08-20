@@ -26,19 +26,14 @@ jobs:
           key: ${{ secrets.VM_SSH_KEY }}
           port: 22
           script: |
-            APP_IMAGE_URI="${{ github.event.inputs.image_uri }}"
-            APP_CONTAINER_NAME="${{ env.CONTAINER_NAME }}"
-            
-            echo "Deploying image: ${APP_IMAGE_URI}"
-
             echo "Stopping and removing existing container (if any)..."
-            sudo docker stop ${APP_CONTAINER_NAME} || true
-            sudo docker rm ${APP_CONTAINER_NAME} || true
+            sudo docker stop ${{ env.CONTAINER_NAME }} || true
+            sudo docker rm ${{ env.CONTAINER_NAME }} || true
             
             echo "Running new Docker container..."
             sudo docker run -d \
               --add-host="localhost:host-gateway" \
-              --name ${APP_CONTAINER_NAME} \
+              --name ${{ env.CONTAINER_NAME }} \
               -p ${{ env.APP_PORT_HOST }}:${{ env.APP_PORT_HOST }} \
               --restart always \
               -e MONGO_URI="${{ secrets.MONGO_URI }}" \
@@ -50,6 +45,6 @@ jobs:
               -e GCP_SA_KEY="${{ secrets.GCP_SA_KEY }}" \
               -e GCP_PROJECT_ID="${{ secrets.GCP_PROJECT_ID }}" \
               -e VC_HOST="${{ secrets.VM_SSH_HOST }}" \
-              ${APP_IMAGE_URI}
+              ${{ github.event.inputs.image_uri }}
 
             echo "Deployment to Compute Engine completed successfully!"

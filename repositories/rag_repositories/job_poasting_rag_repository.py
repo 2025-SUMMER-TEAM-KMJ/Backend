@@ -4,19 +4,10 @@ from __future__ import annotations
 
 from typing import List, Dict, Any, Tuple
 from sentence_transformers import SentenceTransformer
-from chromadb import Client
 import numpy as np
-from settings import VC_HOST, VC_PORT
 from utils.where_minimal import build_where_from_llm
+from database import vc_collection
 
-# ── Chroma ──
-from chromadb import HttpClient
-
-vc_client = HttpClient(host=VC_HOST, port=VC_PORT) 
-vc_collection = vc_client.get_or_create_collection(
-    "master_job_postings",
-    metadata={"hnsw:space": "cosine"}
-)
 
 # ── 페이징을 위해 후보 넉넉히 가져오는 n_results 계산 ──
 def _calc_n_results_for_paging(offset: int, limit: int, *, dup_factor: int = 5, floor: int = 100, ceil: int = 2000) -> int:

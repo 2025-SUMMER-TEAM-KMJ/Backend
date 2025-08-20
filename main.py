@@ -8,6 +8,10 @@ from services.auth import AuthService
 from api.routers import user, cover_letter, auth, job_posting
 from database import init_db
 
+__import__('pysqlite3')
+import sys
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+
 '''
 프론트엔드에서 API 호출 시 CORS 허용할 Origin(출처) 목록
 - 여기 등록된 도메인에서만 브라우저가 쿠키/헤더를 포함해 요청 가능

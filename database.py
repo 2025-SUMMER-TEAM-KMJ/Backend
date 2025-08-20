@@ -7,8 +7,9 @@ from models.refresh_token_document import RefreshTokenDocument
 from models.job_posting_document import JobPostingDocument
 from models.user_job_bookmark_document import UserJobBookmarkDocument
 from models.cover_letter_document import CoverLetterDocument
-from settings import MONGO_URI, DB_NAME
+from settings import MONGO_URI, DB_NAME, VC_HOST, VC_PORT
 from bson.codec_options import CodecOptions, UuidRepresentation
+from chromadb import HttpClient
 
 async def init_db():
     client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_URI)
@@ -30,3 +31,9 @@ async def init_db():
 
     # 종료 시 close를 위해 client도 함께 반환
     return db, client
+
+vc_client = HttpClient(host=VC_HOST, port=VC_PORT) 
+vc_collection = vc_client.get_or_create_collection(
+    "master_job_postings",
+    metadata={"hnsw:space": "cosine"}
+)

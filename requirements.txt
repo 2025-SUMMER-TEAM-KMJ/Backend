@@ -48,4 +48,4 @@ numpy
 sentence-transformers
 chromadb
 google-generativeai
-
+pysqlite3-binary

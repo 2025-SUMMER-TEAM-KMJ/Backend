@@ -31,20 +31,4 @@ jobs:
             sudo docker rm ${{ env.CONTAINER_NAME }} || true
             
             echo "Running new Docker container..."
-            sudo docker run -d \
-              --add-host="localhost:host-gateway" \
-              --name ${{ env.CONTAINER_NAME }} \
-              -p ${{ env.APP_PORT_HOST }}:${{ env.APP_PORT_HOST }} \
-              --restart always \
-              -e MONGO_URI="${{ secrets.MONGO_URI }}" \
-              -e DB_NAME="${{ secrets.DB_NAME }}" \
-              -e JWT_SECRET="${{ secrets.JWT_SECRET }}" \
-              -e GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
-              -e GEMINI_MODEL="${{ vars.GEMINI_MODEL }}" \
-              -e BUCKET="${{ secrets.BUCKET }}" \
-              -e GCP_SA_KEY="${{ secrets.GCP_SA_KEY }}" \
-              -e GCP_PROJECT_ID="${{ secrets.GCP_PROJECT_ID }}" \
-              -e VC_HOST="${{ secrets.VM_SSH_HOST }}" \
-              "${{ github.event.inputs.image_uri }}"
-
-            echo "Deployment to Compute Engine completed successfully!"
+            sudo docker run -d --add-host="localhost:host-gateway" --name ${{ env.CONTAINER_NAME }} -p ${{ env.APP_PORT_HOST }}:${{ env.APP_PORT_HOST }} --restart always -e MONGO_URI="${{ secrets.MONGO_URI }}" -e DB_NAME="${{ secrets.DB_NAME }}" -e JWT_SECRET="${{ secrets.JWT_SECRET }}" -e GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" -e GEMINI_MODEL="${{ vars.GEMINI_MODEL }}" -e BUCKET="${{ secrets.BUCKET }}" -e GCP_SA_KEY="${{ secrets.GCP_SA_KEY }}" -e GCP_PROJECT_ID="${{ secrets.GCP_PROJECT_ID }}" -e VC_HOST="${{ secrets.VM_SSH_HOST }}" "${{ github.event.inputs.image_uri }}"

@@ -24,7 +24,7 @@ ALLOWED_ORIGINS = [
     "http://localhost",
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "https://frontend-delta-five-43.vercel.app/",
+    "http://34.173.199.135:3000",
 ]
 
 @asynccontextmanager

@@ -65,7 +65,7 @@ class JobPostingRagRepository:
         """
         # 사전 인덱싱된 컬렉션에 대해 where 필터(있으면) 적용
         where_cond = build_where_from_llm(query) or None
-
+    
         # 청크 중복 가능성을 고려해 후보 넉넉히
         n_results = _calc_n_results_for_paging(offset, limit)
 

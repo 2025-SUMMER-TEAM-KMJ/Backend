@@ -69,7 +69,8 @@ PROMPT = """너는 채용 추천용 필터 추출기야.
 
 규칙:
 - 존재하는 키만 포함(없으면 아예 생략)
-- 애매하면 bucket 대신 **buckets**로 여러 개 제시, 하지만 자바스크립트처럼 확실히 프론트인건 bucket
+- 사용자가 직무도 찾으려고 한다면 [security, design, product, marketing, sales, cs,
+   data, ai_ml, frontend, backend, legal, logistics, hr, manufacturing, strategy_exec, video_editing] 중 무조건 하나는 뽑아서 bucket 또는 buckets을 구성해야한다.
 - 성동구나 강남구 일대 이런 식으로 애매하게 제시하면 district 대신 **districts**로 여러개 제시
 - 연봉 조건이 나오면 salary_bucket_2m_label 키를 사용
   • salary_bucket_2m_label의 각 원소는 "2,000만~2,200만"처럼 200만원 단위 구간 문자열
@@ -113,6 +114,7 @@ def build_where_from_llm(query: str) -> dict:
 
     # 복수 buckets -> $in
     bs = obj.get("buckets")
+
     if isinstance(bs, list):
         valid = [x for x in bs if isinstance(x, str) and x in BUCKET_SET]
         valid = list(dict.fromkeys(valid))
@@ -164,6 +166,7 @@ def build_where_from_llm(query: str) -> dict:
         return {}
     if len(conds) == 1:
         return conds[0]
+    
     return {"$and": conds}
 
 # ===== quick test =====

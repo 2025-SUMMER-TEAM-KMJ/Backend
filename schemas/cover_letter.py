@@ -44,7 +44,9 @@ class CoverLetterResponse(BaseModel):
     qnas: List[QnA]
     created_at: datetime
     updated_at: datetime
-
+    strength: Optional[List[str]]
+    weakness: Optional[List[str]]
+    
     @classmethod
     def from_doc(cls, doc) -> "CoverLetterResponse":
         d = doc.dict() if hasattr(doc, "dict") else dict(doc)

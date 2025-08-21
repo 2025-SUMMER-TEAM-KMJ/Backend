@@ -29,8 +29,8 @@ class JobPostingRepository:
         else: # query가 존재하는 경우 RAG repository 요청
             job_ids = self.rag.search(q, offset=offset, limit=limit)
             if job_ids == [] or job_ids == None:
-                return []
-            return await self.get_by_ids_preserve_order(job_ids)
+                return [], 0
+            return await self.get_by_ids_preserve_order(job_ids), len(job_ids)
 
         
 

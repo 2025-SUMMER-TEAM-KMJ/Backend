@@ -1,20 +1,17 @@
 import google.generativeai as genai
-import os
-
 from settings import GEMINI_MODEL, GOOGLE_API_KEY
 
-# --- Gemini setup (사용 중인 키/모델 유지) ---
-genai.configure(api_key=GOOGLE_API_KEY)
-model = genai.GenerativeModel(GEMINI_MODEL)
-
 try:
-    genai.configure(api_key="YOUR_API_KEY")
-    model = genai.GenerativeModel('gemini-2.0-flash')
+    genai.configure(api_key=GOOGLE_API_KEY)
 except Exception as e:
     print(f"모델 초기화 중 오류 발생: {e}")
     model = None
 
-def get_gemini_response(prompt):
+def get_gemini_response(prompt, gemini_model=GEMINI_MODEL, temperature=0.7):
+    model = genai.GenerativeModel(gemini_model, generation_config=genai.GenerationConfig(
+        temperature=temperature
+    ))
+
     if not model:
         return "모델이 올바르게 초기화되지 않았습니다."
     
@@ -22,4 +19,5 @@ def get_gemini_response(prompt):
         response = model.generate_content(prompt)
         return response.text
     except Exception as e:
-        raise f"API 호출 중 오류가 발생했습니다: {e}"
+        print("API 호출 중 에러가 발생했습니다.")
+        raise e

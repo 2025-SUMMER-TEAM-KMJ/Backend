@@ -89,7 +89,7 @@ def get_profile_cover_letter_strength_prompt(profile_cover_letter):
     - 사용자가 추구하는 바
     - 사용자의 궁극적 목표
 
-구절을 출력할 때, 띄어쓰기로 구분하십시오.
+구절을 출력할 때, 쉼표로 구분하십시오.
 
 """
 
@@ -117,10 +117,6 @@ def get_job_cover_letter_prompt(profile_cover_letter, position, introduce, main_
 절대로 '사용자 자기소개서'에 없는 내용을 지어내서는 안됩니다. '기업 소개', '주요 사항', '요구 사항', '우대 사항'에 해당되는 내용이 있으면 좋지만, 사용자를 어필하기 위해 존재하지 않는 내용을 강조하진 않습니다.
 
 수정이 완료되었으면 다시 읽어봅니다. 전체 내용은 일관성있게 구성되어야합니다.
-
-'공고 상태'가 'active'가 아닌 경우, 해당 기업은 현재 채용 중이지 않다는 답변을 생성하십시오.
-
-'공고 상태'가 'active'인 경우, 위의 '작성 조건'을 바탕으로 '질문'의 취지에 맞도록 공백 제외 800자의 답변을 작성해주세요.
 
 
 """
@@ -155,7 +151,7 @@ def get_job_cover_letter_strength_prompt(profile_cover_letter, position, introdu
 
 
 <조건 E>에 해당하는 내용이 없을 수 있습니다. 그럴 경우,'해당 사항 없음'을 출력합니다.
-구절만을 출력하며, 쉼표와 띄어쓰기로 구분하십시오.
+구절만을 출력하며, 쉼표로 구분하십시오.
 
 """
 
@@ -187,6 +183,6 @@ def get_job_cover_letter_weakness_prompt(profile, position, introduce, main_task
 
 
 
-구절만을 출력하며, 쉼표와 띄어쓰기로 구분하십시오.
+구절만을 출력하며, 쉼표로 구분하십시오.
 
 """

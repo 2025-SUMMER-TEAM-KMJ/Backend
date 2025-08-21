@@ -16,11 +16,14 @@ class Company(BaseModel):
     name: str
     logo_img: Optional[str] = None
     address: Optional[CompanyAddress] = None
+    features: List[str] = Field(default_factory=list)
+    avgSalary: Optional[int] = None
+    avgEntrySalary: Optional[int] = None
 
 # 직무
 class Position(BaseModel):
     jobGroup: Optional[str] = None
-    job: Optional[str] = None
+    job: Optional[List[str]] = Field(default_factory=list)
 
 # 상세 정보
 class Detail(BaseModel):
@@ -50,6 +53,9 @@ class JobPostingDocument(Document):
     sourceData: Optional[str] = None
     status: Optional[str] = "active"
     title_images: List[str] = Field(default_factory=list)
+    
+    bucket: Optional[str] = None # 수정: bucket 필드 추가
+    salary_bucket_2m_label: Optional[str] = None # 수정: salary_bucket_2m_label 필드 추가
 
     @field_validator("skill_tags", "title_images", mode="before")
     @classmethod
@@ -65,9 +71,9 @@ class JobPostingDocument(Document):
             return [s for s in v if isinstance(s, str) and s.strip()]
         # 그 외 타입이면 방어적으로 빈 리스트
         return []
-
+    
     class Settings:
-        name = "wanted_job_postings"  # 컬렉션명
+        name = "master_job_postings"  # 컬렉션명
         # 크롤링 중복 방지용
         # indexes = [
         #     Indexed("metadata.sourceUrl", unique=True),

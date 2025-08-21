@@ -18,10 +18,13 @@ class JobPostingCompany(BaseModel):
     name: str
     logo_img: Optional[str] = None
     address: Optional[JobPostingCompanyAddress] = None
+    features: List[str] = Field(default_factory=list)
+    avgSalary: Optional[int] = None
+    avgEntrySalary: Optional[int] = None
 
 class JobPostingPosition(BaseModel):
     jobGroup: Optional[str] = None
-    job: Optional[str] = None
+    job: List[str] = Field(default_factory=list)
 
 class JobPostingDetail(BaseModel):
     position: Optional[JobPostingPosition] = None
@@ -33,7 +36,7 @@ class JobPostingDetail(BaseModel):
     hire_rounds: Optional[str] = None
 
 class JobPostingResponse(BaseModel):
-    # 로그인 안 한 사용자는 bookmarked를 응답에서 아예 제외해야 허가 때문에
+    # 로그인 안 한 사용자는 bookmarked를 응답에서 아예 제외해야 하므로
     # FastAPI 라우터에서 response_model_exclude_none=True 를 사용합니다.
     model_config = ConfigDict(from_attributes=True)
 
@@ -49,15 +52,21 @@ class JobPostingResponse(BaseModel):
     sourceData: Optional[str] = None
     status: Optional[Literal["active", "inactive", "closed"]] = "active"
     title_images: List[str] = Field(default_factory=list)
+    
+    bucket: Optional[str] = None
+    salary_bucket_2m_label: Optional[str] = None
 
     # 로그인 사용자의 경우에만 True/False를 채워줌. 비로그인 시 None → 라우터에서 exclude_none 처리.
     bookmarked: Optional[bool] = None
 
     @classmethod
     def from_doc(cls, doc) -> "JobPostingResponse":
-        d = doc.dict() if hasattr(doc, "dict") else dict(doc)
+        """Beanie Document 객체를 Pydantic 스키마 객체로 변환합니다."""
+        d = doc.model_dump()
+        
+        # _id (ObjectId)를 id (str)로 변환
         d["id"] = str(doc.id)
-        d.pop("_id", None)
+        
         return cls(**d)
 
 class JobPostingListResponse(BaseModel):

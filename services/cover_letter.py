@@ -46,7 +46,7 @@ class CoverLetterService:
                 "question": "나의 자기소개서",
                 "answer": content
             })
-            payload["strength"] = strength
+            payload["strength"] = strength.split(',')
 
         elif req.type == 'job_posting':
             profile_cover_letter = await self.repo.list_by_user(user_id, 0, 1, type_filter='profile')
@@ -58,14 +58,14 @@ class CoverLetterService:
             
             strength = get_gemini_response(prompts.get_job_cover_letter_strength_prompt(profile_cover_letter, job.detail.position.job, 
                                                                                 job.detail.intro, job.detail.main_tasks, job.detail.requirements, job.detail.preferred_points,
-                                                                                question))
+                                                                                ))
             weakness = get_gemini_response(prompts.get_job_cover_letter_weakness_prompt(profile_cover_letter, job.detail.position.job, 
                                                                                 job.detail.intro, job.detail.main_tasks, job.detail.requirements, job.detail.preferred_points,
-                                                                                question))
-            payload["strength"] = strength
-            payload["weakness"] = weakness
+                                                                                ))
+            payload["strength"] = strength.split(',')
+            payload["weakness"] = weakness.split(',')
             
-            for qna in req.qnas:
+            for qna in req.qnas if req.qnas else []:
                 question = qna.question
                 answer = get_gemini_response(prompts.get_job_cover_letter_prompt(profile_cover_letter, job.detail.position.job, 
                                                                                 job.detail.intro, job.detail.main_tasks, job.detail.requirements, job.detail.preferred_points,

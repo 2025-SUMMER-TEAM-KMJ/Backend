@@ -21,6 +21,7 @@ async def get_job_postings(
     limit: int = Query(20, ge=1, le=100, description="한 번에 가져올 개수"),
     user_id: Optional[str] = Depends(get_optional_user_id),
 ):
+    print(q)
     return await svc.list(q=q, offset=offset, limit=limit, user_id=user_id)
 
 # 맞춤 추천: 로그인 필요 (bookmarked 포함)

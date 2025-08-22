@@ -101,9 +101,7 @@ def _extract_json(text: str) -> dict:
 def build_where_from_llm(query: str) -> dict:
     # 1) LLM 호출
     resp = get_gemini_response(PROMPT.format(query=query))
-    txt = (getattr(resp, "text", "") or "").strip()
-    obj = _extract_json(txt)
-
+    obj = _extract_json(resp)
     # 2) 있는 키만 where로 조립
     conds = []
 
